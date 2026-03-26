@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "rollcall-web",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd /Users/william.fleurnr/Desktop/rollcall && npx expo start --web --port 8081"],
+      "port": 8081
+    }
+  ]
+}

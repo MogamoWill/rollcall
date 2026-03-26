@@ -1,0 +1,71 @@
+import { create } from "zustand";
+import { supabase } from "@/lib/supabase";
+import type { Equipment, EquipmentKit, EquipmentUniverse } from "@/types";
+
+interface EquipmentState {
+  items: Equipment[];
+  kits: EquipmentKit[];
+  loading: boolean;
+  fetchEquipment: () => Promise<void>;
+  addEquipment: (item: Omit<Equipment, "id" | "created_at" | "updated_at" | "user_id">) => Promise<void>;
+  updateEquipment: (id: string, updates: Partial<Equipment>) => Promise<void>;
+  deleteEquipment: (id: string) => Promise<void>;
+  fetchKits: () => Promise<void>;
+  getByUniverse: (universe: EquipmentUniverse) => Equipment[];
+}
+
+export const useEquipmentStore = create<EquipmentState>((set, get) => ({
+  items: [],
+  kits: [],
+  loading: false,
+
+  fetchEquipment: async () => {
+    set({ loading: true });
+    const { data, error } = await supabase
+      .from("equipment")
+      .select("*")
+      .order("universe")
+      .order("name");
+    if (error) throw error;
+    set({ items: data ?? [], loading: false });
+  },
+
+  addEquipment: async (item) => {
+    const { data, error } = await supabase
+      .from("equipment")
+      .insert(item)
+      .select()
+      .single();
+    if (error) throw error;
+    set((state) => ({ items: [...state.items, data] }));
+  },
+
+  updateEquipment: async (id, updates) => {
+    const { error } = await supabase
+      .from("equipment")
+      .update(updates)
+      .eq("id", id);
+    if (error) throw error;
+    set((state) => ({
+      items: state.items.map((i) => (i.id === id ? { ...i, ...updates } : i)),
+    }));
+  },
+
+  deleteEquipment: async (id) => {
+    const { error } = await supabase.from("equipment").delete().eq("id", id);
+    if (error) throw error;
+    set((state) => ({ items: state.items.filter((i) => i.id !== id) }));
+  },
+
+  fetchKits: async () => {
+    const { data, error } = await supabase
+      .from("equipment_kits")
+      .select("*, items:kit_items(*, equipment(*))");
+    if (error) throw error;
+    set({ kits: data ?? [] });
+  },
+
+  getByUniverse: (universe) => {
+    return get().items.filter((i) => i.universe === universe);
+  },
+}));
