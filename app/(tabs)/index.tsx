@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useProjectStore } from "@/stores/projectStore";
 import { useEquipmentStore } from "@/stores/equipmentStore";
 import { useBoardStore } from "@/stores/boardStore";
@@ -9,11 +9,11 @@ import type { ProjectStatus } from "@/types";
 
 const STATUS_LABELS: Record<ProjectStatus, string> = {
   draft: "Brouillon",
-  pre_prod: "Pré-prod",
+  pre_prod: "Pre-prod",
   production: "Tournage",
   post_prod: "Post-prod",
-  delivered: "Livré",
-  archived: "Archivé",
+  delivered: "Livre",
+  archived: "Archive",
 };
 
 const STATUS_COLORS: Record<ProjectStatus, string> = {
@@ -39,6 +39,16 @@ export default function DashboardScreen() {
   const activeProjects = projects.filter(
     (p) => !["delivered", "archived"].includes(p.status)
   );
+
+  const totalTasks = boards.reduce((acc, b) => {
+    return (
+      acc +
+      (b.columns ?? []).reduce((colAcc, col) => {
+        return colAcc + (col.cards?.length ?? 0);
+      }, 0)
+    );
+  }, 0);
+
   const upcomingShoots = projects
     .filter((p) => p.shoot_date && p.status !== "archived")
     .sort(
@@ -48,84 +58,184 @@ export default function DashboardScreen() {
     .slice(0, 3);
 
   return (
-    <ScrollView className="flex-1 bg-slate-50">
-      <View className="px-5 pt-4 pb-8">
+    <ScrollView className="flex-1" style={{ backgroundColor: "#0F172A" }}>
+      <View style={{ maxWidth: 720, width: "100%", alignSelf: "center" }}>
+      <View className="px-5 pt-6 pb-8">
         {/* Welcome */}
-        <Text className="text-2xl font-bold text-slate-900 mb-6">
-          🎬 RollCall
-        </Text>
-
-        {/* Quick Stats */}
-        <View className="flex-row gap-3 mb-6">
-          <View className="flex-1 bg-white rounded-2xl p-4 border border-slate-100">
-            <Feather name="film" size={24} color="#3B82F6" />
-            <Text className="text-2xl font-bold text-slate-900 mt-2">
-              {activeProjects.length}
+        <View className="mb-6">
+          <Text className="text-sm font-semibold" style={{ color: "#64748B" }}>
+            Bienvenue sur
+          </Text>
+          <View className="flex-row items-center mt-1" style={{ gap: 10 }}>
+            <MaterialCommunityIcons
+              name="movie-open-outline"
+              size={28}
+              color="#1a6bff"
+            />
+            <Text className="text-3xl font-bold" style={{ color: "#F1F5F9" }}>
+              RollCall
             </Text>
-            <Text className="text-sm text-slate-500">Projets actifs</Text>
-          </View>
-          <View className="flex-1 bg-white rounded-2xl p-4 border border-slate-100">
-            <Feather name="camera" size={24} color="#8B5CF6" />
-            <Text className="text-2xl font-bold text-slate-900 mt-2">
-              {items.length}
-            </Text>
-            <Text className="text-sm text-slate-500">Équipements</Text>
-          </View>
-          <View className="flex-1 bg-white rounded-2xl p-4 border border-slate-100">
-            <Feather name="columns" size={24} color="#F59E0B" />
-            <Text className="text-2xl font-bold text-slate-900 mt-2">
-              {boards.length}
-            </Text>
-            <Text className="text-sm text-slate-500">Boards</Text>
           </View>
         </View>
 
-        {/* Upcoming Shoots */}
+        {/* Quick Stats */}
+        <View className="flex-row mb-6" style={{ gap: 10 }}>
+          <View
+            className="flex-1 rounded-2xl p-4"
+            style={{ backgroundColor: "#1E293B", borderWidth: 1, borderColor: "#334155" }}
+          >
+            <View
+              className="w-10 h-10 rounded-xl items-center justify-center mb-3"
+              style={{ backgroundColor: "#1a6bff20" }}
+            >
+              <MaterialCommunityIcons
+                name="movie-open"
+                size={22}
+                color="#1a6bff"
+              />
+            </View>
+            <Text className="text-2xl font-bold" style={{ color: "#F1F5F9" }}>
+              {activeProjects.length}
+            </Text>
+            <Text className="text-xs mt-0.5" style={{ color: "#64748B" }}>
+              Projets en cours
+            </Text>
+          </View>
+
+          <View
+            className="flex-1 rounded-2xl p-4"
+            style={{ backgroundColor: "#1E293B", borderWidth: 1, borderColor: "#334155" }}
+          >
+            <View
+              className="w-10 h-10 rounded-xl items-center justify-center mb-3"
+              style={{ backgroundColor: "#8B5CF620" }}
+            >
+              <MaterialCommunityIcons
+                name="camera"
+                size={22}
+                color="#8B5CF6"
+              />
+            </View>
+            <Text className="text-2xl font-bold" style={{ color: "#F1F5F9" }}>
+              {items.length}
+            </Text>
+            <Text className="text-xs mt-0.5" style={{ color: "#64748B" }}>
+              Equipement total
+            </Text>
+          </View>
+
+          <View
+            className="flex-1 rounded-2xl p-4"
+            style={{ backgroundColor: "#1E293B", borderWidth: 1, borderColor: "#334155" }}
+          >
+            <View
+              className="w-10 h-10 rounded-xl items-center justify-center mb-3"
+              style={{ backgroundColor: "#F59E0B20" }}
+            >
+              <MaterialCommunityIcons
+                name="checkbox-marked-outline"
+                size={22}
+                color="#F59E0B"
+              />
+            </View>
+            <Text className="text-2xl font-bold" style={{ color: "#F1F5F9" }}>
+              {totalTasks}
+            </Text>
+            <Text className="text-xs mt-0.5" style={{ color: "#64748B" }}>
+              Taches a faire
+            </Text>
+          </View>
+        </View>
+
+        {/* Prochain tournage */}
         <View className="mb-6">
-          <Text className="text-lg font-bold text-slate-900 mb-3">
-            Prochains tournages
-          </Text>
+          <View className="flex-row items-center mb-3" style={{ gap: 8 }}>
+            <MaterialCommunityIcons
+              name="calendar-clock"
+              size={18}
+              color="#F59E0B"
+            />
+            <Text className="text-lg font-bold" style={{ color: "#F1F5F9" }}>
+              Prochain tournage
+            </Text>
+          </View>
           {upcomingShoots.length === 0 ? (
-            <View className="bg-white rounded-2xl p-6 border border-slate-100 items-center">
-              <Feather name="calendar" size={32} color="#CBD5E1" />
-              <Text className="text-slate-400 mt-2">
-                Aucun tournage planifié
+            <View
+              className="rounded-2xl p-6 items-center"
+              style={{ backgroundColor: "#1E293B", borderWidth: 1, borderColor: "#334155" }}
+            >
+              <MaterialCommunityIcons
+                name="calendar-blank-outline"
+                size={36}
+                color="#334155"
+              />
+              <Text className="mt-2" style={{ color: "#475569" }}>
+                Aucun tournage planifie
               </Text>
             </View>
           ) : (
             upcomingShoots.map((project) => (
               <TouchableOpacity
                 key={project.id}
-                className="bg-white rounded-2xl p-4 border border-slate-100 mb-2"
-                onPress={() => router.push(`/project/${project.id}`)}
+                className="rounded-2xl p-4 mb-2"
+                style={{
+                  backgroundColor: "#1E293B",
+                  borderWidth: 1,
+                  borderColor: "#334155",
+                }}
+                activeOpacity={0.7}
               >
                 <View className="flex-row items-center justify-between">
                   <View className="flex-1">
-                    <Text className="text-base font-semibold text-slate-900">
+                    <Text
+                      className="text-base font-semibold"
+                      style={{ color: "#F1F5F9" }}
+                    >
                       {project.name}
                     </Text>
                     {project.client && (
-                      <Text className="text-sm text-slate-500">
+                      <Text className="text-sm" style={{ color: "#64748B" }}>
                         {project.client}
                       </Text>
                     )}
+                    {project.location && (
+                      <View
+                        className="flex-row items-center mt-1"
+                        style={{ gap: 4 }}
+                      >
+                        <MaterialCommunityIcons
+                          name="map-marker-outline"
+                          size={12}
+                          color="#475569"
+                        />
+                        <Text className="text-xs" style={{ color: "#475569" }}>
+                          {project.location}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                   <View className="items-end">
-                    <Text className="text-sm font-medium text-brand-500">
-                      {new Date(project.shoot_date!).toLocaleDateString("fr-FR", {
-                        day: "numeric",
-                        month: "short",
-                      })}
+                    <Text
+                      className="text-sm font-bold"
+                      style={{ color: "#1a6bff" }}
+                    >
+                      {new Date(project.shoot_date!).toLocaleDateString(
+                        "fr-FR",
+                        {
+                          day: "numeric",
+                          month: "short",
+                        }
+                      )}
                     </Text>
                     <View
-                      className="px-2 py-0.5 rounded-full mt-1"
+                      className="px-2.5 py-1 rounded-full mt-1.5"
                       style={{
                         backgroundColor:
                           STATUS_COLORS[project.status] + "20",
                       }}
                     >
                       <Text
-                        className="text-xs font-medium"
+                        className="text-xs font-semibold"
                         style={{ color: STATUS_COLORS[project.status] }}
                       >
                         {STATUS_LABELS[project.status]}
@@ -138,30 +248,128 @@ export default function DashboardScreen() {
           )}
         </View>
 
-        {/* Quick Actions */}
-        <Text className="text-lg font-bold text-slate-900 mb-3">
-          Actions rapides
-        </Text>
-        <View className="gap-2">
-          <TouchableOpacity
-            className="bg-brand-500 rounded-2xl p-4 flex-row items-center gap-3"
-            onPress={() => router.push("/projects")}
-          >
-            <Feather name="plus-circle" size={22} color="#FFFFFF" />
-            <Text className="text-white font-semibold text-base">
-              Nouveau projet
+        {/* Recent Activity / Quick Actions */}
+        <View className="mb-6">
+          <View className="flex-row items-center mb-3" style={{ gap: 8 }}>
+            <MaterialCommunityIcons
+              name="lightning-bolt"
+              size={18}
+              color="#1a6bff"
+            />
+            <Text className="text-lg font-bold" style={{ color: "#F1F5F9" }}>
+              Actions rapides
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="bg-white rounded-2xl p-4 flex-row items-center gap-3 border border-slate-100"
-            onPress={() => router.push("/equipment")}
-          >
-            <Feather name="check-square" size={22} color="#1a6bff" />
-            <Text className="text-slate-900 font-semibold text-base">
-              Checker mon matos
-            </Text>
-          </TouchableOpacity>
+          </View>
+
+          <View style={{ gap: 10 }}>
+            <TouchableOpacity
+              className="rounded-2xl p-4 flex-row items-center"
+              style={{ backgroundColor: "#1a6bff", gap: 12 }}
+              onPress={() => router.push("/projects")}
+              activeOpacity={0.8}
+            >
+              <View
+                className="w-10 h-10 rounded-xl items-center justify-center"
+                style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+              >
+                <MaterialCommunityIcons
+                  name="plus"
+                  size={22}
+                  color="#FFFFFF"
+                />
+              </View>
+              <View className="flex-1">
+                <Text className="text-white font-bold text-base">
+                  Nouveau projet
+                </Text>
+                <Text
+                  className="text-xs"
+                  style={{ color: "rgba(255,255,255,0.7)" }}
+                >
+                  Demarrer un nouveau tournage
+                </Text>
+              </View>
+              <MaterialCommunityIcons
+                name="chevron-right"
+                size={20}
+                color="rgba(255,255,255,0.5)"
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="rounded-2xl p-4 flex-row items-center"
+              style={{
+                backgroundColor: "#1E293B",
+                borderWidth: 1,
+                borderColor: "#334155",
+                gap: 12,
+              }}
+              onPress={() => router.push("/equipment")}
+              activeOpacity={0.7}
+            >
+              <View
+                className="w-10 h-10 rounded-xl items-center justify-center"
+                style={{ backgroundColor: "#1a6bff20" }}
+              >
+                <MaterialCommunityIcons
+                  name="checkbox-marked-outline"
+                  size={22}
+                  color="#1a6bff"
+                />
+              </View>
+              <View className="flex-1">
+                <Text className="font-bold text-base" style={{ color: "#F1F5F9" }}>
+                  Checker mon matos
+                </Text>
+                <Text className="text-xs" style={{ color: "#64748B" }}>
+                  Verifier l'inventaire equipement
+                </Text>
+              </View>
+              <MaterialCommunityIcons
+                name="chevron-right"
+                size={20}
+                color="#334155"
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="rounded-2xl p-4 flex-row items-center"
+              style={{
+                backgroundColor: "#1E293B",
+                borderWidth: 1,
+                borderColor: "#334155",
+                gap: 12,
+              }}
+              onPress={() => router.push("/board")}
+              activeOpacity={0.7}
+            >
+              <View
+                className="w-10 h-10 rounded-xl items-center justify-center"
+                style={{ backgroundColor: "#F59E0B20" }}
+              >
+                <MaterialCommunityIcons
+                  name="view-column"
+                  size={22}
+                  color="#F59E0B"
+                />
+              </View>
+              <View className="flex-1">
+                <Text className="font-bold text-base" style={{ color: "#F1F5F9" }}>
+                  Board Kanban
+                </Text>
+                <Text className="text-xs" style={{ color: "#64748B" }}>
+                  Gerer tes taches de production
+                </Text>
+              </View>
+              <MaterialCommunityIcons
+                name="chevron-right"
+                size={20}
+                color="#334155"
+              />
+            </TouchableOpacity>
+          </View>
         </View>
+      </View>
       </View>
     </ScrollView>
   );

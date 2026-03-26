@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,16 +7,21 @@ import {
   TextInput,
   Modal,
   Alert,
-  Animated,
-  PanResponder,
   Dimensions,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useBoardStore } from "@/stores/boardStore";
 import type { BoardCard, BoardColumn } from "@/types";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
-const COLUMN_WIDTH = SCREEN_WIDTH * 0.75;
+const COLUMN_WIDTH = SCREEN_WIDTH * 0.72;
+
+const COLUMN_COLORS: Record<string, string> = {
+  "A faire": "#94A3B8",
+  "En cours": "#3B82F6",
+  Review: "#F59E0B",
+  Termine: "#22C55E",
+};
 
 export default function BoardScreen() {
   const {
@@ -36,7 +41,6 @@ export default function BoardScreen() {
   const [newBoardName, setNewBoardName] = useState("");
   const [newCardTitle, setNewCardTitle] = useState("");
   const [newCardDescription, setNewCardDescription] = useState("");
-  const [draggedCard, setDraggedCard] = useState<BoardCard | null>(null);
 
   useEffect(() => {
     fetchBoards().catch(() => {});
@@ -56,7 +60,7 @@ export default function BoardScreen() {
       setShowNewBoard(false);
       setNewBoardName("");
     } catch {
-      Alert.alert("Erreur", "Impossible de créer le board");
+      Alert.alert("Erreur", "Impossible de creer le board");
     }
   };
 
@@ -72,7 +76,6 @@ export default function BoardScreen() {
       setShowNewCard(null);
       setNewCardTitle("");
       setNewCardDescription("");
-      // Refresh board
       await fetchBoards();
       const updated = useBoardStore
         .getState()
@@ -97,14 +100,18 @@ export default function BoardScreen() {
 
     const targetColumn = columns[targetColIndex];
     try {
-      await moveCard(card.id, targetColumn.id, targetColumn.cards?.length ?? 0);
+      await moveCard(
+        card.id,
+        targetColumn.id,
+        targetColumn.cards?.length ?? 0
+      );
       await fetchBoards();
       const updated = useBoardStore
         .getState()
         .boards.find((b) => b.id === currentBoard.id);
       if (updated) setCurrentBoard(updated);
     } catch {
-      Alert.alert("Erreur", "Impossible de déplacer la carte");
+      Alert.alert("Erreur", "Impossible de deplacer la carte");
     }
   };
 
@@ -128,55 +135,92 @@ export default function BoardScreen() {
 
   if (loading && boards.length === 0) {
     return (
-      <View className="flex-1 bg-slate-50 items-center justify-center">
-        <Text className="text-slate-400">Chargement...</Text>
+      <View
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: "#0F172A" }}
+      >
+        <Text style={{ color: "#475569" }}>Chargement...</Text>
       </View>
     );
   }
 
   if (boards.length === 0) {
     return (
-      <View className="flex-1 bg-slate-50 items-center justify-center px-8">
-        <Feather name="columns" size={48} color="#CBD5E1" />
-        <Text className="text-xl font-bold text-slate-900 mt-4">
+      <View
+        className="flex-1 items-center justify-center px-8"
+        style={{ backgroundColor: "#0F172A" }}
+      >
+        <View
+          className="w-20 h-20 rounded-2xl items-center justify-center mb-4"
+          style={{ backgroundColor: "#1E293B" }}
+        >
+          <MaterialCommunityIcons
+            name="view-column"
+            size={40}
+            color="#334155"
+          />
+        </View>
+        <Text className="text-xl font-bold mt-2" style={{ color: "#F1F5F9" }}>
           Aucun board
         </Text>
-        <Text className="text-slate-500 text-center mt-2 mb-6">
-          Crée ton premier board Kanban pour organiser tes projets
+        <Text
+          className="text-center mt-2 mb-6"
+          style={{ color: "#64748B" }}
+        >
+          Cree ton premier board Kanban pour organiser tes projets
         </Text>
         <TouchableOpacity
-          className="bg-brand-500 px-6 py-3 rounded-xl"
+          className="px-6 py-3 rounded-xl"
+          style={{ backgroundColor: "#1a6bff" }}
           onPress={() => setShowNewBoard(true)}
+          activeOpacity={0.8}
         >
-          <Text className="text-white font-semibold">Créer un board</Text>
+          <Text className="text-white font-bold">Creer un board</Text>
         </TouchableOpacity>
 
+        {/* New board modal (same as below) */}
         <Modal visible={showNewBoard} transparent animationType="fade">
-          <View className="flex-1 bg-black/50 justify-center px-8">
-            <View className="bg-white rounded-2xl p-6">
-              <Text className="text-lg font-bold text-slate-900 mb-4">
+          <View
+            className="flex-1 justify-center px-8"
+            style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+          >
+            <View className="rounded-2xl p-6" style={{ backgroundColor: "#1E293B" }}>
+              <Text
+                className="text-lg font-bold mb-4"
+                style={{ color: "#F1F5F9" }}
+              >
                 Nouveau board
               </Text>
               <TextInput
-                className="border border-slate-200 rounded-xl px-4 py-3 text-base bg-slate-50 mb-4"
+                className="rounded-xl px-4 py-3 text-base mb-4"
+                style={{
+                  backgroundColor: "#0F172A",
+                  borderWidth: 1,
+                  borderColor: "#334155",
+                  color: "#F1F5F9",
+                }}
                 placeholder="Nom du board"
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor="#475569"
                 value={newBoardName}
                 onChangeText={setNewBoardName}
                 autoFocus
               />
-              <View className="flex-row gap-3">
+              <View className="flex-row" style={{ gap: 10 }}>
                 <TouchableOpacity
-                  className="flex-1 py-3 rounded-xl border border-slate-200 items-center"
+                  className="flex-1 py-3 rounded-xl items-center"
+                  style={{ borderWidth: 1, borderColor: "#334155" }}
                   onPress={() => setShowNewBoard(false)}
                 >
-                  <Text className="text-slate-700 font-medium">Annuler</Text>
+                  <Text className="font-medium" style={{ color: "#94A3B8" }}>
+                    Annuler
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  className="flex-1 py-3 rounded-xl bg-brand-500 items-center"
+                  className="flex-1 py-3 rounded-xl items-center"
+                  style={{ backgroundColor: "#1a6bff" }}
                   onPress={handleCreateBoard}
                 >
-                  <Text className="text-white font-semibold">Créer</Text>
+                  <Text className="text-white font-bold">Creer</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -187,37 +231,48 @@ export default function BoardScreen() {
   }
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <View className="flex-1" style={{ backgroundColor: "#0F172A" }}>
       {/* Board selector */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className="max-h-14 px-4 pt-3"
+        className="px-4 pt-3 pb-2"
+        style={{ maxHeight: 52 }}
       >
-        {boards.map((board) => (
-          <TouchableOpacity
-            key={board.id}
-            className={`mr-2 px-4 py-2 rounded-full ${
-              currentBoard?.id === board.id
-                ? "bg-brand-500"
-                : "bg-white border border-slate-200"
-            }`}
-            onPress={() => setCurrentBoard(board)}
-          >
-            <Text
-              className={`text-sm font-medium ${
-                currentBoard?.id === board.id ? "text-white" : "text-slate-700"
-              }`}
+        {boards.map((board) => {
+          const isActive = currentBoard?.id === board.id;
+          return (
+            <TouchableOpacity
+              key={board.id}
+              className="mr-2 px-4 py-2 rounded-full"
+              style={{
+                backgroundColor: isActive ? "#1a6bff" : "#1E293B",
+                borderWidth: isActive ? 0 : 1,
+                borderColor: "#334155",
+              }}
+              onPress={() => setCurrentBoard(board)}
             >
-              {board.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                className="text-sm font-semibold"
+                style={{ color: isActive ? "#FFFFFF" : "#94A3B8" }}
+              >
+                {board.name}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
         <TouchableOpacity
-          className="px-4 py-2 rounded-full border border-dashed border-slate-300"
+          className="px-4 py-2 rounded-full"
+          style={{
+            borderWidth: 1,
+            borderStyle: "dashed",
+            borderColor: "#334155",
+          }}
           onPress={() => setShowNewBoard(true)}
         >
-          <Text className="text-sm text-slate-400">+ Board</Text>
+          <Text className="text-sm" style={{ color: "#475569" }}>
+            + Board
+          </Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -225,152 +280,245 @@ export default function BoardScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className="flex-1 pt-4"
+        className="flex-1 pt-3"
         pagingEnabled={false}
         snapToInterval={COLUMN_WIDTH + 12}
         decelerationRate="fast"
         contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
       >
-        {(currentBoard?.columns ?? []).map((column: BoardColumn, colIndex: number) => (
-          <View
-            key={column.id}
-            className="bg-white rounded-2xl border border-slate-100"
-            style={{ width: COLUMN_WIDTH }}
-          >
-            {/* Column header */}
-            <View className="flex-row items-center px-4 pt-4 pb-2">
+        {(currentBoard?.columns ?? []).map(
+          (column: BoardColumn, colIndex: number) => {
+            const colColor =
+              COLUMN_COLORS[column.name] || column.color || "#94A3B8";
+            return (
               <View
-                className="w-3 h-3 rounded-full mr-2"
-                style={{ backgroundColor: column.color }}
-              />
-              <Text className="text-base font-bold text-slate-900 flex-1">
-                {column.name}
-              </Text>
-              <Text className="text-sm text-slate-400">
-                {column.cards?.length ?? 0}
-              </Text>
-            </View>
-
-            {/* Cards */}
-            <ScrollView className="px-3 pb-3" style={{ maxHeight: 500 }}>
-              {(column.cards ?? []).map((card: BoardCard) => (
-                <View
-                  key={card.id}
-                  className="bg-slate-50 rounded-xl p-3 mb-2 border border-slate-100"
-                >
-                  <Text className="text-sm font-medium text-slate-900">
-                    {card.title}
+                key={column.id}
+                className="rounded-2xl"
+                style={{
+                  width: COLUMN_WIDTH,
+                  backgroundColor: "#1E293B",
+                  borderWidth: 1,
+                  borderColor: "#334155",
+                }}
+              >
+                {/* Column header */}
+                <View className="flex-row items-center px-4 pt-4 pb-2">
+                  <View
+                    className="w-3 h-3 rounded-full mr-2"
+                    style={{ backgroundColor: colColor }}
+                  />
+                  <Text
+                    className="text-base font-bold flex-1"
+                    style={{ color: "#F1F5F9" }}
+                  >
+                    {column.name}
                   </Text>
-                  {card.description && (
-                    <Text className="text-xs text-slate-500 mt-1" numberOfLines={2}>
-                      {card.description}
+                  <View
+                    className="px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: colColor + "20" }}
+                  >
+                    <Text
+                      className="text-xs font-bold"
+                      style={{ color: colColor }}
+                    >
+                      {column.cards?.length ?? 0}
                     </Text>
-                  )}
-                  {card.due_date && (
-                    <View className="flex-row items-center mt-2 gap-1">
-                      <Feather name="calendar" size={10} color="#94A3B8" />
-                      <Text className="text-xs text-slate-400">
-                        {new Date(card.due_date).toLocaleDateString("fr-FR")}
-                      </Text>
-                    </View>
-                  )}
-
-                  {/* Move buttons */}
-                  <View className="flex-row justify-between mt-2 pt-2 border-t border-slate-100">
-                    <TouchableOpacity
-                      className="p-1"
-                      onPress={() => handleMoveCard(card, "left")}
-                      disabled={colIndex === 0}
-                    >
-                      <Feather
-                        name="chevron-left"
-                        size={16}
-                        color={colIndex === 0 ? "#E2E8F0" : "#64748B"}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      className="p-1"
-                      onPress={() => handleDeleteCard(card)}
-                    >
-                      <Feather name="trash-2" size={14} color="#EF4444" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      className="p-1"
-                      onPress={() => handleMoveCard(card, "right")}
-                      disabled={
-                        colIndex ===
-                        (currentBoard?.columns ?? []).length - 1
-                      }
-                    >
-                      <Feather
-                        name="chevron-right"
-                        size={16}
-                        color={
-                          colIndex ===
-                          (currentBoard?.columns ?? []).length - 1
-                            ? "#E2E8F0"
-                            : "#64748B"
-                        }
-                      />
-                    </TouchableOpacity>
                   </View>
                 </View>
-              ))}
 
-              {/* Add card button */}
-              <TouchableOpacity
-                className="border border-dashed border-slate-200 rounded-xl p-3 items-center"
-                onPress={() => setShowNewCard(column.id)}
-              >
-                <Feather name="plus" size={16} color="#94A3B8" />
-                <Text className="text-xs text-slate-400 mt-1">
-                  Ajouter une carte
-                </Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        ))}
+                {/* Cards */}
+                <ScrollView
+                  className="px-3 pb-3"
+                  style={{ maxHeight: 500 }}
+                >
+                  {(column.cards ?? []).map((card: BoardCard) => (
+                    <View
+                      key={card.id}
+                      className="rounded-xl p-3 mb-2"
+                      style={{
+                        backgroundColor: "#0F172A",
+                        borderWidth: 1,
+                        borderColor: "#334155",
+                      }}
+                    >
+                      <Text
+                        className="text-sm font-semibold"
+                        style={{ color: "#F1F5F9" }}
+                      >
+                        {card.title}
+                      </Text>
+                      {card.description && (
+                        <Text
+                          className="text-xs mt-1"
+                          numberOfLines={2}
+                          style={{ color: "#64748B" }}
+                        >
+                          {card.description}
+                        </Text>
+                      )}
+                      {card.due_date && (
+                        <View
+                          className="flex-row items-center mt-2"
+                          style={{ gap: 4 }}
+                        >
+                          <MaterialCommunityIcons
+                            name="calendar-outline"
+                            size={11}
+                            color="#475569"
+                          />
+                          <Text
+                            className="text-xs"
+                            style={{ color: "#475569" }}
+                          >
+                            {new Date(card.due_date).toLocaleDateString(
+                              "fr-FR"
+                            )}
+                          </Text>
+                        </View>
+                      )}
+
+                      {/* Move buttons */}
+                      <View
+                        className="flex-row justify-between mt-2 pt-2"
+                        style={{
+                          borderTopWidth: 1,
+                          borderTopColor: "#1E293B",
+                        }}
+                      >
+                        <TouchableOpacity
+                          className="p-1"
+                          onPress={() => handleMoveCard(card, "left")}
+                          disabled={colIndex === 0}
+                        >
+                          <MaterialCommunityIcons
+                            name="chevron-left"
+                            size={16}
+                            color={colIndex === 0 ? "#1E293B" : "#64748B"}
+                          />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          className="p-1"
+                          onPress={() => handleDeleteCard(card)}
+                        >
+                          <MaterialCommunityIcons
+                            name="delete-outline"
+                            size={14}
+                            color="#EF4444"
+                          />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          className="p-1"
+                          onPress={() => handleMoveCard(card, "right")}
+                          disabled={
+                            colIndex ===
+                            (currentBoard?.columns ?? []).length - 1
+                          }
+                        >
+                          <MaterialCommunityIcons
+                            name="chevron-right"
+                            size={16}
+                            color={
+                              colIndex ===
+                              (currentBoard?.columns ?? []).length - 1
+                                ? "#1E293B"
+                                : "#64748B"
+                            }
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ))}
+
+                  {/* Add card button */}
+                  <TouchableOpacity
+                    className="rounded-xl p-3 items-center"
+                    style={{
+                      borderWidth: 1,
+                      borderStyle: "dashed",
+                      borderColor: "#334155",
+                    }}
+                    onPress={() => setShowNewCard(column.id)}
+                  >
+                    <MaterialCommunityIcons
+                      name="plus"
+                      size={16}
+                      color="#475569"
+                    />
+                    <Text
+                      className="text-xs mt-1"
+                      style={{ color: "#475569" }}
+                    >
+                      Ajouter une carte
+                    </Text>
+                  </TouchableOpacity>
+                </ScrollView>
+              </View>
+            );
+          }
+        )}
       </ScrollView>
 
       {/* New card modal */}
       <Modal visible={!!showNewCard} transparent animationType="fade">
-        <View className="flex-1 bg-black/50 justify-center px-8">
-          <View className="bg-white rounded-2xl p-6">
-            <Text className="text-lg font-bold text-slate-900 mb-4">
+        <View
+          className="flex-1 justify-center px-8"
+          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+        >
+          <View className="rounded-2xl p-6" style={{ backgroundColor: "#1E293B" }}>
+            <Text
+              className="text-lg font-bold mb-4"
+              style={{ color: "#F1F5F9" }}
+            >
               Nouvelle carte
             </Text>
             <TextInput
-              className="border border-slate-200 rounded-xl px-4 py-3 text-base bg-slate-50 mb-3"
+              className="rounded-xl px-4 py-3 text-base mb-3"
+              style={{
+                backgroundColor: "#0F172A",
+                borderWidth: 1,
+                borderColor: "#334155",
+                color: "#F1F5F9",
+              }}
               placeholder="Titre"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor="#475569"
               value={newCardTitle}
               onChangeText={setNewCardTitle}
               autoFocus
             />
             <TextInput
-              className="border border-slate-200 rounded-xl px-4 py-3 text-base bg-slate-50 mb-4"
+              className="rounded-xl px-4 py-3 text-base mb-4"
+              style={{
+                backgroundColor: "#0F172A",
+                borderWidth: 1,
+                borderColor: "#334155",
+                color: "#F1F5F9",
+              }}
               placeholder="Description (optionnel)"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor="#475569"
               value={newCardDescription}
               onChangeText={setNewCardDescription}
               multiline
             />
-            <View className="flex-row gap-3">
+            <View className="flex-row" style={{ gap: 10 }}>
               <TouchableOpacity
-                className="flex-1 py-3 rounded-xl border border-slate-200 items-center"
+                className="flex-1 py-3 rounded-xl items-center"
+                style={{ borderWidth: 1, borderColor: "#334155" }}
                 onPress={() => {
                   setShowNewCard(null);
                   setNewCardTitle("");
                   setNewCardDescription("");
                 }}
               >
-                <Text className="text-slate-700 font-medium">Annuler</Text>
+                <Text className="font-medium" style={{ color: "#94A3B8" }}>
+                  Annuler
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="flex-1 py-3 rounded-xl bg-brand-500 items-center"
+                className="flex-1 py-3 rounded-xl items-center"
+                style={{ backgroundColor: "#1a6bff" }}
                 onPress={handleAddCard}
               >
-                <Text className="text-white font-semibold">Ajouter</Text>
+                <Text className="text-white font-bold">Ajouter</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -379,31 +527,47 @@ export default function BoardScreen() {
 
       {/* New board modal */}
       <Modal visible={showNewBoard} transparent animationType="fade">
-        <View className="flex-1 bg-black/50 justify-center px-8">
-          <View className="bg-white rounded-2xl p-6">
-            <Text className="text-lg font-bold text-slate-900 mb-4">
+        <View
+          className="flex-1 justify-center px-8"
+          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+        >
+          <View className="rounded-2xl p-6" style={{ backgroundColor: "#1E293B" }}>
+            <Text
+              className="text-lg font-bold mb-4"
+              style={{ color: "#F1F5F9" }}
+            >
               Nouveau board
             </Text>
             <TextInput
-              className="border border-slate-200 rounded-xl px-4 py-3 text-base bg-slate-50 mb-4"
+              className="rounded-xl px-4 py-3 text-base mb-4"
+              style={{
+                backgroundColor: "#0F172A",
+                borderWidth: 1,
+                borderColor: "#334155",
+                color: "#F1F5F9",
+              }}
               placeholder="Nom du board"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor="#475569"
               value={newBoardName}
               onChangeText={setNewBoardName}
               autoFocus
             />
-            <View className="flex-row gap-3">
+            <View className="flex-row" style={{ gap: 10 }}>
               <TouchableOpacity
-                className="flex-1 py-3 rounded-xl border border-slate-200 items-center"
+                className="flex-1 py-3 rounded-xl items-center"
+                style={{ borderWidth: 1, borderColor: "#334155" }}
                 onPress={() => setShowNewBoard(false)}
               >
-                <Text className="text-slate-700 font-medium">Annuler</Text>
+                <Text className="font-medium" style={{ color: "#94A3B8" }}>
+                  Annuler
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="flex-1 py-3 rounded-xl bg-brand-500 items-center"
+                className="flex-1 py-3 rounded-xl items-center"
+                style={{ backgroundColor: "#1a6bff" }}
                 onPress={handleCreateBoard}
               >
-                <Text className="text-white font-semibold">Créer</Text>
+                <Text className="text-white font-bold">Creer</Text>
               </TouchableOpacity>
             </View>
           </View>

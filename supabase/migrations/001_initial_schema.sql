@@ -1,383 +1,172 @@
--- ============================================
--- RollCall - Initial Database Schema
--- ============================================
+-- Profiles (extends Supabase auth.users)
+create table public.profiles (
+  id uuid references auth.users on delete cascade primary key,
+  full_name text,
+  avatar_url text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
 
--- Enable UUID extension
-create extension if not exists "uuid-ossp";
+-- Equipment categories (univers)
+create table public.equipment_categories (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references public.profiles(id) on delete cascade not null,
+  name text not null, -- "Objectifs", "Boîtiers", "Câbles", "Multiprises", "Color Checker", etc.
+  icon text,
+  sort_order int default 0,
+  created_at timestamptz default now()
+);
 
--- ============================================
--- EQUIPMENT
--- ============================================
-
-create table equipment (
-  id uuid primary key default uuid_generate_v4(),
-  user_id uuid references auth.users(id) on delete cascade not null,
+-- Equipment items
+create table public.equipment_items (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references public.profiles(id) on delete cascade not null,
+  category_id uuid references public.equipment_categories(id) on delete cascade not null,
   name text not null,
-  universe text not null check (universe in ('camera', 'lens', 'lighting', 'audio', 'cable', 'power', 'grip', 'monitoring', 'storage', 'accessory')),
   brand text,
   model text,
   serial_number text,
-  qr_code text unique,
+  qr_code text, -- only for high-value items
   is_high_value boolean default false,
   notes text,
+  condition text default 'good', -- good, fair, needs_repair
   image_url text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
 
-create index idx_equipment_user on equipment(user_id);
-create index idx_equipment_universe on equipment(universe);
-
--- Equipment Kits
-create table equipment_kits (
-  id uuid primary key default uuid_generate_v4(),
-  user_id uuid references auth.users(id) on delete cascade not null,
-  name text not null,
-  description text,
-  created_at timestamptz default now()
-);
-
-create table kit_items (
-  id uuid primary key default uuid_generate_v4(),
-  kit_id uuid references equipment_kits(id) on delete cascade not null,
-  equipment_id uuid references equipment(id) on delete cascade not null,
-  quantity integer default 1
-);
-
--- ============================================
--- PROJECTS
--- ============================================
-
-create table projects (
-  id uuid primary key default uuid_generate_v4(),
-  user_id uuid references auth.users(id) on delete cascade not null,
+-- Projects
+create table public.projects (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references public.profiles(id) on delete cascade not null,
   name text not null,
   client text,
-  status text not null default 'draft' check (status in ('draft', 'pre_prod', 'production', 'post_prod', 'delivered', 'archived')),
   description text,
-  shoot_date date,
+  status text default 'planning', -- planning, pre_prod, shooting, post_prod, delivered, archived
+  start_date date,
+  end_date date,
   location text,
-  kit_id uuid references equipment_kits(id) on delete set null,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
 
-create index idx_projects_user on projects(user_id);
-create index idx_projects_status on projects(status);
-
--- ============================================
--- SHOT LIST
--- ============================================
-
-create table shots (
-  id uuid primary key default uuid_generate_v4(),
-  project_id uuid references projects(id) on delete cascade not null,
+-- Shot list
+create table public.shots (
+  id uuid default gen_random_uuid() primary key,
+  project_id uuid references public.projects(id) on delete cascade not null,
+  number int,
   description text not null,
-  shot_type text not null default 'other' check (shot_type in ('wide', 'medium', 'close_up', 'detail', 'drone', 'tracking', 'static', 'other')),
-  priority text not null default 'must_have' check (priority in ('must_have', 'nice_to_have', 'optional')),
+  shot_type text, -- wide, medium, close_up, detail, drone, etc.
+  priority text default 'normal', -- must_have, normal, nice_to_have
   is_completed boolean default false,
   notes text,
-  "order" integer default 0
-);
-
-create index idx_shots_project on shots(project_id);
-
--- ============================================
--- CHECKLISTS
--- ============================================
-
-create table checklists (
-  id uuid primary key default uuid_generate_v4(),
-  user_id uuid references auth.users(id) on delete cascade not null,
-  project_id uuid references projects(id) on delete cascade,
-  name text not null,
-  phase text not null check (phase in ('pre_prod', 'production', 'post_prod')),
-  is_template boolean default false,
+  sort_order int default 0,
   created_at timestamptz default now()
 );
 
-create table checklist_items (
-  id uuid primary key default uuid_generate_v4(),
-  checklist_id uuid references checklists(id) on delete cascade not null,
-  label text not null,
-  is_checked boolean default false,
-  "order" integer default 0
-);
-
-create index idx_checklists_project on checklists(project_id);
-create index idx_checklist_items_checklist on checklist_items(checklist_id);
-
--- ============================================
--- KANBAN BOARDS
--- ============================================
-
-create table boards (
-  id uuid primary key default uuid_generate_v4(),
-  user_id uuid references auth.users(id) on delete cascade not null,
-  name text not null,
+-- Equipment kits (template checklists)
+create table public.equipment_kits (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references public.profiles(id) on delete cascade not null,
+  name text not null, -- "Kit Interview", "Kit Drone", "Kit Studio"
+  description text,
   created_at timestamptz default now()
 );
 
-create table board_columns (
-  id uuid primary key default uuid_generate_v4(),
-  board_id uuid references boards(id) on delete cascade not null,
-  name text not null,
-  color text not null default '#94A3B8',
-  "order" integer default 0
+-- Kit items (many-to-many: kits <-> equipment)
+create table public.kit_items (
+  id uuid default gen_random_uuid() primary key,
+  kit_id uuid references public.equipment_kits(id) on delete cascade not null,
+  item_id uuid references public.equipment_items(id) on delete cascade not null,
+  quantity int default 1,
+  unique(kit_id, item_id)
 );
 
-create table board_cards (
-  id uuid primary key default uuid_generate_v4(),
-  column_id uuid references board_columns(id) on delete cascade not null,
-  project_id uuid references projects(id) on delete set null,
+-- Project checklists (pre/during/post)
+create table public.project_checklists (
+  id uuid default gen_random_uuid() primary key,
+  project_id uuid references public.projects(id) on delete cascade not null,
+  phase text not null, -- pre_prod, production, post_prod
+  title text not null,
+  is_completed boolean default false,
+  sort_order int default 0,
+  created_at timestamptz default now()
+);
+
+-- Board columns (Monday-like Kanban)
+create table public.board_columns (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references public.profiles(id) on delete cascade not null,
+  project_id uuid references public.projects(id) on delete cascade,
+  name text not null,
+  color text default '#1a6bff',
+  sort_order int default 0,
+  created_at timestamptz default now()
+);
+
+-- Board cards
+create table public.board_cards (
+  id uuid default gen_random_uuid() primary key,
+  column_id uuid references public.board_columns(id) on delete cascade not null,
   title text not null,
   description text,
   due_date date,
-  labels text[] default '{}',
-  "order" integer default 0
-);
-
-create index idx_board_columns_board on board_columns(board_id);
-create index idx_board_cards_column on board_cards(column_id);
-
--- ============================================
--- FIELD NOTES
--- ============================================
-
-create table field_notes (
-  id uuid primary key default uuid_generate_v4(),
-  project_id uuid references projects(id) on delete cascade not null,
-  content text not null,
-  type text not null default 'text' check (type in ('text', 'audio')),
-  audio_url text,
-  created_at timestamptz default now()
-);
-
-create index idx_field_notes_project on field_notes(project_id);
-
--- ============================================
--- USER SETTINGS (integrations)
--- ============================================
-
-create table user_settings (
-  user_id uuid primary key references auth.users(id) on delete cascade,
-  monday_api_key text,
-  microsoft_token text,
+  priority text default 'normal',
+  labels text[], -- array of label strings
+  sort_order int default 0,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
 
--- ============================================
--- ROW LEVEL SECURITY
--- ============================================
-
-alter table equipment enable row level security;
-alter table equipment_kits enable row level security;
-alter table kit_items enable row level security;
-alter table projects enable row level security;
-alter table shots enable row level security;
-alter table checklists enable row level security;
-alter table checklist_items enable row level security;
-alter table boards enable row level security;
-alter table board_columns enable row level security;
-alter table board_cards enable row level security;
-alter table field_notes enable row level security;
-alter table user_settings enable row level security;
-
--- Equipment policies
-create policy "Users can view own equipment" on equipment for select using (auth.uid() = user_id);
-create policy "Users can insert own equipment" on equipment for insert with check (auth.uid() = user_id);
-create policy "Users can update own equipment" on equipment for update using (auth.uid() = user_id);
-create policy "Users can delete own equipment" on equipment for delete using (auth.uid() = user_id);
-
--- Equipment kits policies
-create policy "Users can view own kits" on equipment_kits for select using (auth.uid() = user_id);
-create policy "Users can insert own kits" on equipment_kits for insert with check (auth.uid() = user_id);
-create policy "Users can update own kits" on equipment_kits for update using (auth.uid() = user_id);
-create policy "Users can delete own kits" on equipment_kits for delete using (auth.uid() = user_id);
-
--- Kit items policies (via kit ownership)
-create policy "Users can view own kit items" on kit_items for select using (
-  exists (select 1 from equipment_kits where id = kit_items.kit_id and user_id = auth.uid())
-);
-create policy "Users can insert own kit items" on kit_items for insert with check (
-  exists (select 1 from equipment_kits where id = kit_items.kit_id and user_id = auth.uid())
-);
-create policy "Users can delete own kit items" on kit_items for delete using (
-  exists (select 1 from equipment_kits where id = kit_items.kit_id and user_id = auth.uid())
+-- Field notes (jour J)
+create table public.field_notes (
+  id uuid default gen_random_uuid() primary key,
+  project_id uuid references public.projects(id) on delete cascade not null,
+  content text not null,
+  type text default 'text', -- text, audio, photo
+  media_url text,
+  created_at timestamptz default now()
 );
 
--- Projects policies
-create policy "Users can view own projects" on projects for select using (auth.uid() = user_id);
-create policy "Users can insert own projects" on projects for insert with check (auth.uid() = user_id);
-create policy "Users can update own projects" on projects for update using (auth.uid() = user_id);
-create policy "Users can delete own projects" on projects for delete using (auth.uid() = user_id);
+-- RLS policies
+alter table public.profiles enable row level security;
+alter table public.equipment_categories enable row level security;
+alter table public.equipment_items enable row level security;
+alter table public.projects enable row level security;
+alter table public.shots enable row level security;
+alter table public.equipment_kits enable row level security;
+alter table public.kit_items enable row level security;
+alter table public.project_checklists enable row level security;
+alter table public.board_columns enable row level security;
+alter table public.board_cards enable row level security;
+alter table public.field_notes enable row level security;
 
--- Shots policies (via project ownership)
-create policy "Users can view own shots" on shots for select using (
-  exists (select 1 from projects where id = shots.project_id and user_id = auth.uid())
-);
-create policy "Users can insert own shots" on shots for insert with check (
-  exists (select 1 from projects where id = shots.project_id and user_id = auth.uid())
-);
-create policy "Users can update own shots" on shots for update using (
-  exists (select 1 from projects where id = shots.project_id and user_id = auth.uid())
-);
-create policy "Users can delete own shots" on shots for delete using (
-  exists (select 1 from projects where id = shots.project_id and user_id = auth.uid())
-);
+-- RLS: Users can only access their own data
+create policy "Users can view own profile" on public.profiles for select using (auth.uid() = id);
+create policy "Users can update own profile" on public.profiles for update using (auth.uid() = id);
+create policy "Users can insert own profile" on public.profiles for insert with check (auth.uid() = id);
 
--- Checklists policies
-create policy "Users can view own checklists" on checklists for select using (auth.uid() = user_id);
-create policy "Users can insert own checklists" on checklists for insert with check (auth.uid() = user_id);
-create policy "Users can update own checklists" on checklists for update using (auth.uid() = user_id);
-create policy "Users can delete own checklists" on checklists for delete using (auth.uid() = user_id);
+create policy "Users can manage own categories" on public.equipment_categories for all using (auth.uid() = user_id);
+create policy "Users can manage own items" on public.equipment_items for all using (auth.uid() = user_id);
+create policy "Users can manage own projects" on public.projects for all using (auth.uid() = user_id);
+create policy "Users can manage own shots" on public.shots for all using (project_id in (select id from public.projects where user_id = auth.uid()));
+create policy "Users can manage own kits" on public.equipment_kits for all using (auth.uid() = user_id);
+create policy "Users can manage kit items" on public.kit_items for all using (kit_id in (select id from public.equipment_kits where user_id = auth.uid()));
+create policy "Users can manage own checklists" on public.project_checklists for all using (project_id in (select id from public.projects where user_id = auth.uid()));
+create policy "Users can manage own columns" on public.board_columns for all using (auth.uid() = user_id);
+create policy "Users can manage own cards" on public.board_cards for all using (column_id in (select id from public.board_columns where user_id = auth.uid()));
+create policy "Users can manage own notes" on public.field_notes for all using (project_id in (select id from public.projects where user_id = auth.uid()));
 
--- Checklist items policies (via checklist ownership)
-create policy "Users can view own checklist items" on checklist_items for select using (
-  exists (select 1 from checklists where id = checklist_items.checklist_id and user_id = auth.uid())
-);
-create policy "Users can insert own checklist items" on checklist_items for insert with check (
-  exists (select 1 from checklists where id = checklist_items.checklist_id and user_id = auth.uid())
-);
-create policy "Users can update own checklist items" on checklist_items for update using (
-  exists (select 1 from checklists where id = checklist_items.checklist_id and user_id = auth.uid())
-);
-create policy "Users can delete own checklist items" on checklist_items for delete using (
-  exists (select 1 from checklists where id = checklist_items.checklist_id and user_id = auth.uid())
-);
-
--- Boards policies
-create policy "Users can view own boards" on boards for select using (auth.uid() = user_id);
-create policy "Users can insert own boards" on boards for insert with check (auth.uid() = user_id);
-create policy "Users can update own boards" on boards for update using (auth.uid() = user_id);
-create policy "Users can delete own boards" on boards for delete using (auth.uid() = user_id);
-
--- Board columns policies (via board ownership)
-create policy "Users can view own board columns" on board_columns for select using (
-  exists (select 1 from boards where id = board_columns.board_id and user_id = auth.uid())
-);
-create policy "Users can insert own board columns" on board_columns for insert with check (
-  exists (select 1 from boards where id = board_columns.board_id and user_id = auth.uid())
-);
-create policy "Users can update own board columns" on board_columns for update using (
-  exists (select 1 from boards where id = board_columns.board_id and user_id = auth.uid())
-);
-create policy "Users can delete own board columns" on board_columns for delete using (
-  exists (select 1 from boards where id = board_columns.board_id and user_id = auth.uid())
-);
-
--- Board cards policies (via column → board ownership)
-create policy "Users can view own board cards" on board_cards for select using (
-  exists (
-    select 1 from board_columns bc
-    join boards b on b.id = bc.board_id
-    where bc.id = board_cards.column_id and b.user_id = auth.uid()
-  )
-);
-create policy "Users can insert own board cards" on board_cards for insert with check (
-  exists (
-    select 1 from board_columns bc
-    join boards b on b.id = bc.board_id
-    where bc.id = board_cards.column_id and b.user_id = auth.uid()
-  )
-);
-create policy "Users can update own board cards" on board_cards for update using (
-  exists (
-    select 1 from board_columns bc
-    join boards b on b.id = bc.board_id
-    where bc.id = board_cards.column_id and b.user_id = auth.uid()
-  )
-);
-create policy "Users can delete own board cards" on board_cards for delete using (
-  exists (
-    select 1 from board_columns bc
-    join boards b on b.id = bc.board_id
-    where bc.id = board_cards.column_id and b.user_id = auth.uid()
-  )
-);
-
--- Field notes policies (via project ownership)
-create policy "Users can view own field notes" on field_notes for select using (
-  exists (select 1 from projects where id = field_notes.project_id and user_id = auth.uid())
-);
-create policy "Users can insert own field notes" on field_notes for insert with check (
-  exists (select 1 from projects where id = field_notes.project_id and user_id = auth.uid())
-);
-create policy "Users can delete own field notes" on field_notes for delete using (
-  exists (select 1 from projects where id = field_notes.project_id and user_id = auth.uid())
-);
-
--- User settings policies
-create policy "Users can view own settings" on user_settings for select using (auth.uid() = user_id);
-create policy "Users can upsert own settings" on user_settings for insert with check (auth.uid() = user_id);
-create policy "Users can update own settings" on user_settings for update using (auth.uid() = user_id);
-
--- ============================================
--- DEFAULT CHECKLIST TEMPLATES (seed data via function)
--- ============================================
-
-create or replace function create_default_checklists(p_user_id uuid)
-returns void as $$
+-- Auto-create profile on signup
+create or replace function public.handle_new_user()
+returns trigger as $$
 begin
-  -- Pre-prod checklist
-  insert into checklists (user_id, name, phase, is_template) values
-    (p_user_id, 'Pré-production', 'pre_prod', true);
-
-  insert into checklist_items (checklist_id, label, "order")
-  select c.id, item.label, item.ord
-  from checklists c,
-  (values
-    ('Brief client validé', 0),
-    ('Repérage effectué', 1),
-    ('Shot list créée', 2),
-    ('Kit matériel sélectionné', 3),
-    ('Batteries chargées', 4),
-    ('Cartes mémoire formatées', 5),
-    ('Autorisations de tournage', 6),
-    ('Transport réservé', 7),
-    ('Contact client confirmé', 8)
-  ) as item(label, ord)
-  where c.user_id = p_user_id and c.name = 'Pré-production' and c.is_template = true;
-
-  -- Production checklist
-  insert into checklists (user_id, name, phase, is_template) values
-    (p_user_id, 'Jour de tournage', 'production', true);
-
-  insert into checklist_items (checklist_id, label, "order")
-  select c.id, item.label, item.ord
-  from checklists c,
-  (values
-    ('Tout le matos est là', 0),
-    ('Batteries de rechange', 1),
-    ('Color checker / mire', 2),
-    ('Balance des blancs', 3),
-    ('Test audio', 4),
-    ('Shot list imprimée / accessible', 5),
-    ('Backup en cours de journée', 6),
-    ('Rien oublié sur le lieu', 7)
-  ) as item(label, ord)
-  where c.user_id = p_user_id and c.name = 'Jour de tournage' and c.is_template = true;
-
-  -- Post-prod checklist
-  insert into checklists (user_id, name, phase, is_template) values
-    (p_user_id, 'Post-production', 'post_prod', true);
-
-  insert into checklist_items (checklist_id, label, "order")
-  select c.id, item.label, item.ord
-  from checklists c,
-  (values
-    ('Cartes déchargées et vérifiées', 0),
-    ('Double backup effectué', 1),
-    ('Fichiers renommés et organisés', 2),
-    ('Dérushage terminé', 3),
-    ('Montage', 4),
-    ('Étalonnage', 5),
-    ('Sound design / mixage', 6),
-    ('Export final', 7),
-    ('Livraison client', 8),
-    ('Archivage projet', 9)
-  ) as item(label, ord)
-  where c.user_id = p_user_id and c.name = 'Post-production' and c.is_template = true;
+  insert into public.profiles (id, full_name, avatar_url)
+  values (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'avatar_url');
+  return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();

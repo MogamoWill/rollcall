@@ -8,7 +8,7 @@ import {
   Alert,
   Switch,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/lib/supabase";
 
@@ -35,7 +35,7 @@ export default function SettingsScreen() {
 
   const handleSaveMondayKey = async () => {
     if (!mondayApiKey) {
-      Alert.alert("Erreur", "Entre ta clé API Monday");
+      Alert.alert("Erreur", "Entre ta cle API Monday");
       return;
     }
     try {
@@ -45,9 +45,9 @@ export default function SettingsScreen() {
       });
       setMondayConnected(true);
       setMondayApiKey("");
-      Alert.alert("Succès", "Monday.com connecté !");
+      Alert.alert("Succes", "Monday.com connecte !");
     } catch {
-      Alert.alert("Erreur", "Impossible de sauvegarder la clé");
+      Alert.alert("Erreur", "Impossible de sauvegarder la cle");
     }
   };
 
@@ -60,56 +60,95 @@ export default function SettingsScreen() {
   };
 
   const handleSignOut = () => {
-    Alert.alert("Déconnexion", "Tu veux te déconnecter ?", [
+    Alert.alert("Deconnexion", "Tu veux te deconnecter ?", [
       { text: "Annuler", style: "cancel" },
-      { text: "Déconnecter", style: "destructive", onPress: signOut },
+      { text: "Deconnecter", style: "destructive", onPress: signOut },
     ]);
   };
 
   return (
-    <ScrollView className="flex-1 bg-slate-50">
+    <ScrollView className="flex-1" style={{ backgroundColor: "#0F172A" }}>
+      <View style={{ maxWidth: 720, width: "100%", alignSelf: "center" }}>
       <View className="px-5 pt-4 pb-8">
         {/* Profile */}
-        <View className="bg-white rounded-2xl p-5 border border-slate-100 mb-4">
-          <View className="flex-row items-center gap-4">
-            <View className="w-14 h-14 rounded-full bg-brand-100 items-center justify-center">
-              <Text className="text-xl font-bold text-brand-600">
+        <View
+          className="rounded-2xl p-5 mb-4"
+          style={{
+            backgroundColor: "#1E293B",
+            borderWidth: 1,
+            borderColor: "#334155",
+          }}
+        >
+          <View className="flex-row items-center" style={{ gap: 14 }}>
+            <View
+              className="w-14 h-14 rounded-full items-center justify-center"
+              style={{ backgroundColor: "#1a6bff20" }}
+            >
+              <Text className="text-xl font-bold" style={{ color: "#1a6bff" }}>
                 {user?.email?.charAt(0).toUpperCase() ?? "?"}
               </Text>
             </View>
             <View>
-              <Text className="text-lg font-bold text-slate-900">
+              <Text className="text-lg font-bold" style={{ color: "#F1F5F9" }}>
                 {user?.email ?? "Utilisateur"}
               </Text>
-              <Text className="text-sm text-slate-500">Compte RollCall</Text>
+              <Text className="text-sm" style={{ color: "#64748B" }}>
+                Compte RollCall
+              </Text>
             </View>
           </View>
         </View>
 
         {/* Integrations */}
-        <Text className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-4 px-1">
-          Intégrations
+        <Text
+          className="text-xs font-semibold uppercase tracking-wider mb-2 mt-4 px-1"
+          style={{ color: "#475569" }}
+        >
+          Integrations
         </Text>
 
         {/* Monday.com */}
-        <View className="bg-white rounded-2xl p-4 border border-slate-100 mb-2">
+        <View
+          className="rounded-2xl p-4 mb-2"
+          style={{
+            backgroundColor: "#1E293B",
+            borderWidth: 1,
+            borderColor: "#334155",
+          }}
+        >
           <View className="flex-row items-center justify-between mb-3">
-            <View className="flex-row items-center gap-3">
-              <View className="w-10 h-10 rounded-xl bg-purple-50 items-center justify-center">
-                <Feather name="trello" size={20} color="#7C3AED" />
+            <View className="flex-row items-center" style={{ gap: 12 }}>
+              <View
+                className="w-10 h-10 rounded-xl items-center justify-center"
+                style={{ backgroundColor: "#7C3AED20" }}
+              >
+                <MaterialCommunityIcons
+                  name="view-dashboard"
+                  size={20}
+                  color="#7C3AED"
+                />
               </View>
               <View>
-                <Text className="text-base font-semibold text-slate-900">
+                <Text
+                  className="text-base font-semibold"
+                  style={{ color: "#F1F5F9" }}
+                >
                   Monday.com
                 </Text>
-                <Text className="text-xs text-slate-500">
-                  {mondayConnected ? "Connecté" : "Non connecté"}
+                <Text className="text-xs" style={{ color: "#64748B" }}>
+                  {mondayConnected ? "Connecte" : "Non connecte"}
                 </Text>
               </View>
             </View>
             {mondayConnected && (
-              <View className="bg-green-50 px-2 py-1 rounded-full">
-                <Text className="text-green-600 text-xs font-medium">
+              <View
+                className="px-2.5 py-1 rounded-full"
+                style={{ backgroundColor: "#22C55E20" }}
+              >
+                <Text
+                  className="text-xs font-bold"
+                  style={{ color: "#22C55E" }}
+                >
                   Actif
                 </Text>
               </View>
@@ -118,28 +157,39 @@ export default function SettingsScreen() {
 
           {mondayConnected ? (
             <TouchableOpacity
-              className="border border-red-200 rounded-xl py-2.5 items-center"
+              className="rounded-xl py-2.5 items-center"
+              style={{ borderWidth: 1, borderColor: "#EF444440" }}
               onPress={handleDisconnectMonday}
             >
-              <Text className="text-red-500 font-medium text-sm">
-                Déconnecter
+              <Text
+                className="font-medium text-sm"
+                style={{ color: "#EF4444" }}
+              >
+                Deconnecter
               </Text>
             </TouchableOpacity>
           ) : (
-            <View className="gap-2">
+            <View style={{ gap: 8 }}>
               <TextInput
-                className="border border-slate-200 rounded-xl px-4 py-2.5 text-sm bg-slate-50"
-                placeholder="Clé API Monday.com"
-                placeholderTextColor="#94A3B8"
+                className="rounded-xl px-4 py-2.5 text-sm"
+                style={{
+                  backgroundColor: "#0F172A",
+                  borderWidth: 1,
+                  borderColor: "#334155",
+                  color: "#F1F5F9",
+                }}
+                placeholder="Cle API Monday.com"
+                placeholderTextColor="#475569"
                 value={mondayApiKey}
                 onChangeText={setMondayApiKey}
                 secureTextEntry
               />
               <TouchableOpacity
-                className="bg-purple-500 rounded-xl py-2.5 items-center"
+                className="rounded-xl py-2.5 items-center"
+                style={{ backgroundColor: "#7C3AED" }}
                 onPress={handleSaveMondayKey}
               >
-                <Text className="text-white font-medium text-sm">
+                <Text className="text-white font-semibold text-sm">
                   Connecter
                 </Text>
               </TouchableOpacity>
@@ -148,30 +198,56 @@ export default function SettingsScreen() {
         </View>
 
         {/* Microsoft (Teams / Outlook) */}
-        <View className="bg-white rounded-2xl p-4 border border-slate-100 mb-2">
+        <View
+          className="rounded-2xl p-4 mb-2"
+          style={{
+            backgroundColor: "#1E293B",
+            borderWidth: 1,
+            borderColor: "#334155",
+          }}
+        >
           <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-3">
-              <View className="w-10 h-10 rounded-xl bg-blue-50 items-center justify-center">
-                <Feather name="calendar" size={20} color="#2563EB" />
+            <View className="flex-row items-center" style={{ gap: 12 }}>
+              <View
+                className="w-10 h-10 rounded-xl items-center justify-center"
+                style={{ backgroundColor: "#2563EB20" }}
+              >
+                <MaterialCommunityIcons
+                  name="microsoft-outlook"
+                  size={20}
+                  color="#2563EB"
+                />
               </View>
               <View>
-                <Text className="text-base font-semibold text-slate-900">
+                <Text
+                  className="text-base font-semibold"
+                  style={{ color: "#F1F5F9" }}
+                >
                   Microsoft 365
                 </Text>
-                <Text className="text-xs text-slate-500">
+                <Text className="text-xs" style={{ color: "#64748B" }}>
                   Teams & Outlook Calendar
                 </Text>
               </View>
             </View>
             {microsoftConnected ? (
-              <View className="bg-green-50 px-2 py-1 rounded-full">
-                <Text className="text-green-600 text-xs font-medium">
+              <View
+                className="px-2.5 py-1 rounded-full"
+                style={{ backgroundColor: "#22C55E20" }}
+              >
+                <Text
+                  className="text-xs font-bold"
+                  style={{ color: "#22C55E" }}
+                >
                   Actif
                 </Text>
               </View>
             ) : (
-              <TouchableOpacity className="bg-blue-500 px-4 py-2 rounded-xl">
-                <Text className="text-white font-medium text-sm">
+              <TouchableOpacity
+                className="px-4 py-2 rounded-xl"
+                style={{ backgroundColor: "#2563EB" }}
+              >
+                <Text className="text-white font-semibold text-sm">
                   Connecter
                 </Text>
               </TouchableOpacity>
@@ -180,24 +256,42 @@ export default function SettingsScreen() {
         </View>
 
         {/* App info */}
-        <Text className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6 px-1">
+        <Text
+          className="text-xs font-semibold uppercase tracking-wider mb-2 mt-6 px-1"
+          style={{ color: "#475569" }}
+        >
           Application
         </Text>
 
-        <View className="bg-white rounded-2xl border border-slate-100">
-          <View className="flex-row items-center justify-between p-4 border-b border-slate-50">
-            <Text className="text-base text-slate-900">Version</Text>
-            <Text className="text-sm text-slate-500">1.0.0 (MVP)</Text>
-          </View>
-          <TouchableOpacity
-            className="p-4"
-            onPress={handleSignOut}
+        <View
+          className="rounded-2xl"
+          style={{
+            backgroundColor: "#1E293B",
+            borderWidth: 1,
+            borderColor: "#334155",
+          }}
+        >
+          <View
+            className="flex-row items-center justify-between p-4"
+            style={{ borderBottomWidth: 1, borderBottomColor: "#334155" }}
           >
-            <Text className="text-base text-red-500 font-medium">
-              Se déconnecter
+            <Text className="text-base" style={{ color: "#F1F5F9" }}>
+              Version
+            </Text>
+            <Text className="text-sm" style={{ color: "#64748B" }}>
+              1.0.0 (MVP)
+            </Text>
+          </View>
+          <TouchableOpacity className="p-4" onPress={handleSignOut}>
+            <Text
+              className="text-base font-semibold"
+              style={{ color: "#EF4444" }}
+            >
+              Se deconnecter
             </Text>
           </TouchableOpacity>
         </View>
+      </View>
       </View>
     </ScrollView>
   );

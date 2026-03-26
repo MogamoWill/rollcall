@@ -1,31 +1,34 @@
 import { Tabs } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: "#1a6bff",
-        tabBarInactiveTintColor: "#94A3B8",
+        tabBarInactiveTintColor: "#475569",
         tabBarStyle: {
-          backgroundColor: "#FFFFFF",
-          borderTopColor: "#F1F5F9",
+          backgroundColor: "#0F172A",
+          borderTopColor: "#1E293B",
+          borderTopWidth: 1,
           paddingBottom: 4,
-          height: 60,
+          paddingTop: 4,
+          height: 64,
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: "600",
         },
         headerStyle: {
-          backgroundColor: "#FFFFFF",
+          backgroundColor: "#0F172A",
         },
         headerTitleStyle: {
           fontWeight: "700",
           fontSize: 18,
-          color: "#0F172A",
+          color: "#F1F5F9",
         },
         headerShadowVisible: false,
+        headerTintColor: "#F1F5F9",
       }}
     >
       <Tabs.Screen
@@ -33,16 +36,16 @@ export default function TabLayout() {
         options={{
           title: "Dashboard",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="home" size={size} color={color} />
+            <MaterialCommunityIcons name="home" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="equipment"
         options={{
-          title: "Matériel",
+          title: "Materiel",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="camera" size={size} color={color} />
+            <MaterialCommunityIcons name="camera" size={size} color={color} />
           ),
         }}
       />
@@ -51,7 +54,11 @@ export default function TabLayout() {
         options={{
           title: "Projets",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="film" size={size} color={color} />
+            <MaterialCommunityIcons
+              name="movie-open"
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -60,16 +67,20 @@ export default function TabLayout() {
         options={{
           title: "Board",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="columns" size={size} color={color} />
+            <MaterialCommunityIcons
+              name="view-column"
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Réglages",
+          title: "Reglages",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="settings" size={size} color={color} />
+            <MaterialCommunityIcons name="cog" size={size} color={color} />
           ),
         }}
       />
