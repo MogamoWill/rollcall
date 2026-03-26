@@ -22,7 +22,7 @@ export const useEquipmentStore = create<EquipmentState>((set, get) => ({
   fetchEquipment: async () => {
     set({ loading: true });
     const { data, error } = await supabase
-      .from("equipment")
+      .from("equipment_items")
       .select("*")
       .order("universe")
       .order("name");
@@ -32,7 +32,7 @@ export const useEquipmentStore = create<EquipmentState>((set, get) => ({
 
   addEquipment: async (item) => {
     const { data, error } = await supabase
-      .from("equipment")
+      .from("equipment_items")
       .insert(item)
       .select()
       .single();
@@ -42,7 +42,7 @@ export const useEquipmentStore = create<EquipmentState>((set, get) => ({
 
   updateEquipment: async (id, updates) => {
     const { error } = await supabase
-      .from("equipment")
+      .from("equipment_items")
       .update(updates)
       .eq("id", id);
     if (error) throw error;
@@ -52,7 +52,7 @@ export const useEquipmentStore = create<EquipmentState>((set, get) => ({
   },
 
   deleteEquipment: async (id) => {
-    const { error } = await supabase.from("equipment").delete().eq("id", id);
+    const { error } = await supabase.from("equipment_items").delete().eq("id", id);
     if (error) throw error;
     set((state) => ({ items: state.items.filter((i) => i.id !== id) }));
   },

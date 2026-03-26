@@ -54,10 +54,10 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
     // Create default columns
     const defaultColumns = [
-      { board_id: board.id, name: "À faire", color: "#94A3B8", order: 0 },
-      { board_id: board.id, name: "En cours", color: "#3B82F6", order: 1 },
-      { board_id: board.id, name: "Review", color: "#F59E0B", order: 2 },
-      { board_id: board.id, name: "Terminé", color: "#22C55E", order: 3 },
+      { board_id: board.id, name: "À faire", color: "#94A3B8", order: 0, user_id: board.user_id },
+      { board_id: board.id, name: "En cours", color: "#3B82F6", order: 1, user_id: board.user_id },
+      { board_id: board.id, name: "Review", color: "#F59E0B", order: 2, user_id: board.user_id },
+      { board_id: board.id, name: "Terminé", color: "#22C55E", order: 3, user_id: board.user_id },
     ];
 
     const { data: columns, error: colError } = await supabase
