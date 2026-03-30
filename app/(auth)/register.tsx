@@ -66,8 +66,8 @@ export default function RegisterScreen() {
           {/* Logo */}
           <View className="items-center mb-10">
             <View
-              className="w-20 h-20 rounded-2xl items-center justify-center mb-5"
-              style={{ backgroundColor: "#1a6bff" }}
+              className="w-20 h-20 rounded-xl items-center justify-center mb-5"
+              style={{ backgroundColor: "#E8A838" }}
             >
               <MaterialCommunityIcons
                 name="movie-open-outline"
@@ -77,7 +77,7 @@ export default function RegisterScreen() {
             </View>
             <Text
               className="text-4xl font-bold mb-2"
-              style={{ color: "#FFFFFF" }}
+              style={{ color: "#FDF4E7" }}
             >
               RollCall
             </Text>
@@ -89,8 +89,8 @@ export default function RegisterScreen() {
           <View className="mb-6" style={{ gap: 14 }}>
             <View>
               <Text
-                className="text-xs font-semibold uppercase mb-1.5 tracking-wider"
-                style={{ color: "#64748B" }}
+                className="text-xs font-bold uppercase mb-1.5 tracking-widest"
+                style={{ color: "#64748B", borderLeftWidth: 2, borderLeftColor: "#E8A838", paddingLeft: 8 }}
               >
                 Email
               </Text>
@@ -112,8 +112,8 @@ export default function RegisterScreen() {
             </View>
             <View>
               <Text
-                className="text-xs font-semibold uppercase mb-1.5 tracking-wider"
-                style={{ color: "#64748B" }}
+                className="text-xs font-bold uppercase mb-1.5 tracking-widest"
+                style={{ color: "#64748B", borderLeftWidth: 2, borderLeftColor: "#E8A838", paddingLeft: 8 }}
               >
                 Mot de passe
               </Text>
@@ -134,8 +134,8 @@ export default function RegisterScreen() {
             </View>
             <View>
               <Text
-                className="text-xs font-semibold uppercase mb-1.5 tracking-wider"
-                style={{ color: "#64748B" }}
+                className="text-xs font-bold uppercase mb-1.5 tracking-widest"
+                style={{ color: "#64748B", borderLeftWidth: 2, borderLeftColor: "#E8A838", paddingLeft: 8 }}
               >
                 Confirmer
               </Text>
@@ -159,13 +159,13 @@ export default function RegisterScreen() {
           <TouchableOpacity
             className="rounded-xl py-4 items-center mb-8"
             style={{
-              backgroundColor: loading ? "#334155" : "#1a6bff",
+              backgroundColor: loading ? "#334155" : "#E8A838",
             }}
             onPress={handleRegister}
             disabled={loading}
             activeOpacity={0.8}
           >
-            <Text className="text-white font-bold text-base">
+            <Text className="font-bold text-base" style={{ color: "#0F172A" }}>
               {loading ? "Inscription..." : "S'inscrire"}
             </Text>
           </TouchableOpacity>
@@ -174,7 +174,7 @@ export default function RegisterScreen() {
             <Text style={{ color: "#64748B" }}>Deja un compte ? </Text>
             <Link href="/(auth)/login" asChild>
               <TouchableOpacity>
-                <Text className="font-bold" style={{ color: "#1a6bff" }}>
+                <Text className="font-bold" style={{ color: "#E8A838" }}>
                   Se connecter
                 </Text>
               </TouchableOpacity>

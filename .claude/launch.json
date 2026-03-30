@@ -4,8 +4,8 @@
     {
       "name": "rollcall-web",
       "runtimeExecutable": "bash",
-      "runtimeArgs": ["-c", "cd /Users/william.fleurnr/Desktop/rollcall && npx expo start --web --port 8081"],
-      "port": 8081
+      "runtimeArgs": ["-c", "cd /Users/william.fleurnr/Desktop/rollcall && npx expo start --web --port 8082"],
+      "port": 8082
     }
   ]
 }

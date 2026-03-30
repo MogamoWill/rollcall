@@ -16,6 +16,11 @@ import {
   type EquipmentUniverse,
   type Equipment,
 } from "@/types";
+import {
+  EQUIPMENT_FIELDS,
+  getAttributeSummary,
+  type EquipmentFieldConfig,
+} from "@/constants/equipmentFields";
 
 const UNIVERSES = Object.keys(UNIVERSE_LABELS) as EquipmentUniverse[];
 
@@ -47,6 +52,17 @@ const CATEGORY_TABS: { key: EquipmentUniverse | "all"; label: string }[] = [
   { key: "storage", label: "Stockage" },
 ];
 
+const INITIAL_NEW_ITEM = {
+  name: "",
+  brand: "",
+  model: "",
+  serial_number: "",
+  universe: "camera" as EquipmentUniverse,
+  is_high_value: false,
+  notes: "",
+  attributes: {} as Record<string, any>,
+};
+
 export default function EquipmentScreen() {
   const { items, loading, fetchEquipment, addEquipment, deleteEquipment } =
     useEquipmentStore();
@@ -54,15 +70,7 @@ export default function EquipmentScreen() {
     EquipmentUniverse | "all"
   >("all");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newItem, setNewItem] = useState({
-    name: "",
-    brand: "",
-    model: "",
-    serial_number: "",
-    universe: "camera" as EquipmentUniverse,
-    is_high_value: false,
-    notes: "",
-  });
+  const [newItem, setNewItem] = useState({ ...INITIAL_NEW_ITEM });
 
   useEffect(() => {
     fetchEquipment().catch(() => {});
@@ -81,15 +89,7 @@ export default function EquipmentScreen() {
     try {
       await addEquipment(newItem);
       setShowAddModal(false);
-      setNewItem({
-        name: "",
-        brand: "",
-        model: "",
-        serial_number: "",
-        universe: "camera",
-        is_high_value: false,
-        notes: "",
-      });
+      setNewItem({ ...INITIAL_NEW_ITEM });
     } catch {
       Alert.alert("Erreur", "Impossible d'ajouter l'equipement");
     }
@@ -111,6 +111,122 @@ export default function EquipmentScreen() {
       ? items.length
       : items.filter((i) => i.universe === universe).length;
 
+  const setAttribute = (key: string, value: any) => {
+    setNewItem((prev) => ({
+      ...prev,
+      attributes: { ...prev.attributes, [key]: value },
+    }));
+  };
+
+  const handleUniverseChange = (u: EquipmentUniverse) => {
+    setNewItem((prev) => ({
+      ...prev,
+      universe: u,
+      attributes: {},
+    }));
+  };
+
+  const renderField = (field: EquipmentFieldConfig) => {
+    const value = newItem.attributes[field.key];
+
+    if (field.type === "select" && field.options) {
+      return (
+        <View key={field.key} style={{ marginBottom: 14 }}>
+          <Text
+            className="text-sm font-medium mb-2"
+            style={{ color: "#64748B" }}
+          >
+            {field.label}
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          >
+            {field.options.map((option) => {
+              const isSelected = value === option;
+              return (
+                <TouchableOpacity
+                  key={option}
+                  className="mr-2 px-3 py-1.5 rounded-full"
+                  style={{
+                    backgroundColor: isSelected ? "#E8A838" : "#1E293B",
+                    borderWidth: isSelected ? 0 : 1,
+                    borderColor: "#334155",
+                  }}
+                  onPress={() =>
+                    setAttribute(field.key, isSelected ? undefined : option)
+                  }
+                >
+                  <Text
+                    className="text-sm"
+                    style={{
+                      color: isSelected ? "#FFFFFF" : "#94A3B8",
+                      fontWeight: isSelected ? "600" : "400",
+                    }}
+                  >
+                    {option}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+      );
+    }
+
+    if (field.type === "text") {
+      return (
+        <View key={field.key} style={{ marginBottom: 14 }}>
+          <TextInput
+            className="rounded-xl px-4 py-3 text-base"
+            style={{
+              backgroundColor: "#1E293B",
+              borderWidth: 1,
+              borderColor: "#334155",
+              color: "#F1F5F9",
+            }}
+            placeholder={field.placeholder || field.label}
+            placeholderTextColor="#475569"
+            value={value || ""}
+            onChangeText={(t) => setAttribute(field.key, t || undefined)}
+          />
+        </View>
+      );
+    }
+
+    if (field.type === "toggle") {
+      return (
+        <View
+          key={field.key}
+          className="flex-row items-center justify-between rounded-xl px-4 py-3"
+          style={{
+            backgroundColor: "#1E293B",
+            borderWidth: 1,
+            borderColor: "#334155",
+            marginBottom: 14,
+          }}
+        >
+          <Text
+            className="text-base font-medium"
+            style={{ color: "#F1F5F9" }}
+          >
+            {field.label}
+          </Text>
+          <Switch
+            value={!!value}
+            onValueChange={(v) => setAttribute(field.key, v || undefined)}
+            trackColor={{ false: "#334155", true: "#E8A838" }}
+            thumbColor="#FFFFFF"
+          />
+        </View>
+      );
+    }
+
+    return null;
+  };
+
+  const universeFields = EQUIPMENT_FIELDS[newItem.universe] || [];
+
   return (
     <View className="flex-1" style={{ backgroundColor: "#0F172A" }}>
       <View style={{ maxWidth: 720, width: "100%", alignSelf: "center", flex: 1 }}>
@@ -129,7 +245,7 @@ export default function EquipmentScreen() {
               key={tab.key}
               className="mr-2 px-4 py-2 rounded-full flex-row items-center"
               style={{
-                backgroundColor: isActive ? "#1a6bff" : "#1E293B",
+                backgroundColor: isActive ? "#E8A838" : "#1E293B",
                 borderWidth: isActive ? 0 : 1,
                 borderColor: "#334155",
                 gap: 6,
@@ -186,67 +302,78 @@ export default function EquipmentScreen() {
             </Text>
           </View>
         ) : (
-          filteredItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              className="rounded-2xl p-4 mb-2 flex-row items-center"
-              style={{
-                backgroundColor: "#1E293B",
-                borderWidth: 1,
-                borderColor: "#334155",
-              }}
-              onLongPress={() => handleDelete(item)}
-              activeOpacity={0.7}
-            >
-              <View
-                className="w-11 h-11 rounded-xl items-center justify-center mr-3"
-                style={{ backgroundColor: "#1a6bff15" }}
+          filteredItems.map((item) => {
+            const summary = getAttributeSummary(item);
+            return (
+              <TouchableOpacity
+                key={item.id}
+                className="rounded-xl p-4 mb-2 flex-row items-center"
+                style={{
+                  backgroundColor: "#1E293B",
+                  borderLeftWidth: 3,
+                  borderLeftColor: "#E8A838",
+                }}
+                onLongPress={() => handleDelete(item)}
+                activeOpacity={0.7}
               >
-                <MaterialCommunityIcons
-                  name={
-                    UNIVERSE_MCI_ICONS[item.universe] as keyof typeof MaterialCommunityIcons.glyphMap
-                  }
-                  size={22}
-                  color="#1a6bff"
-                />
-              </View>
-              <View className="flex-1">
-                <Text
-                  className="text-base font-semibold"
-                  style={{ color: "#F1F5F9" }}
-                >
-                  {item.name}
-                </Text>
-                <Text className="text-sm" style={{ color: "#64748B" }}>
-                  {[item.brand, item.model].filter(Boolean).join(" ") ||
-                    UNIVERSE_LABELS[item.universe]}
-                </Text>
-              </View>
-              {item.is_high_value && (
                 <View
-                  className="flex-row items-center px-2.5 py-1 rounded-full mr-2"
-                  style={{ backgroundColor: "#F59E0B20", gap: 4 }}
+                  className="w-11 h-11 rounded-xl items-center justify-center mr-3"
+                  style={{ backgroundColor: "#E8A83815" }}
                 >
                   <MaterialCommunityIcons
-                    name="qrcode"
-                    size={12}
-                    color="#F59E0B"
+                    name={
+                      UNIVERSE_MCI_ICONS[item.universe] as keyof typeof MaterialCommunityIcons.glyphMap
+                    }
+                    size={22}
+                    color="#E8A838"
                   />
-                  <Text
-                    className="text-xs font-bold"
-                    style={{ color: "#F59E0B" }}
-                  >
-                    QR
-                  </Text>
                 </View>
-              )}
-              <MaterialCommunityIcons
-                name="chevron-right"
-                size={18}
-                color="#334155"
-              />
-            </TouchableOpacity>
-          ))
+                <View className="flex-1">
+                  <Text
+                    className="text-base font-semibold"
+                    style={{ color: "#F1F5F9" }}
+                  >
+                    {item.name}
+                  </Text>
+                  <Text className="text-sm" style={{ color: "#64748B" }}>
+                    {[item.brand, item.model].filter(Boolean).join(" ") ||
+                      UNIVERSE_LABELS[item.universe]}
+                  </Text>
+                  {summary ? (
+                    <Text
+                      className="text-xs mt-0.5"
+                      style={{ color: "#94A3B8" }}
+                    >
+                      {summary}
+                    </Text>
+                  ) : null}
+                </View>
+                {item.is_high_value && (
+                  <View
+                    className="flex-row items-center px-2.5 py-1 rounded-full mr-2"
+                    style={{ backgroundColor: "#F59E0B20", gap: 4 }}
+                  >
+                    <MaterialCommunityIcons
+                      name="qrcode"
+                      size={12}
+                      color="#F59E0B"
+                    />
+                    <Text
+                      className="text-xs font-bold"
+                      style={{ color: "#F59E0B" }}
+                    >
+                      QR
+                    </Text>
+                  </View>
+                )}
+                <MaterialCommunityIcons
+                  name="chevron-right"
+                  size={18}
+                  color="#334155"
+                />
+              </TouchableOpacity>
+            );
+          })
         )}
         <View className="h-24" />
       </ScrollView>
@@ -255,8 +382,8 @@ export default function EquipmentScreen() {
       <TouchableOpacity
         className="absolute bottom-6 right-6 w-14 h-14 rounded-full items-center justify-center"
         style={{
-          backgroundColor: "#1a6bff",
-          shadowColor: "#1a6bff",
+          backgroundColor: "#E8A838",
+          shadowColor: "#E8A838",
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.4,
           shadowRadius: 8,
@@ -280,7 +407,7 @@ export default function EquipmentScreen() {
             style={{ borderBottomWidth: 1, borderBottomColor: "#1E293B" }}
           >
             <TouchableOpacity onPress={() => setShowAddModal(false)}>
-              <Text className="text-base" style={{ color: "#1a6bff" }}>
+              <Text className="text-base" style={{ color: "#E8A838" }}>
                 Annuler
               </Text>
             </TouchableOpacity>
@@ -290,7 +417,7 @@ export default function EquipmentScreen() {
             <TouchableOpacity onPress={handleAdd}>
               <Text
                 className="text-base font-semibold"
-                style={{ color: "#1a6bff" }}
+                style={{ color: "#E8A838" }}
               >
                 Ajouter
               </Text>
@@ -316,11 +443,11 @@ export default function EquipmentScreen() {
                   className="mr-2 px-4 py-2 rounded-full"
                   style={{
                     backgroundColor:
-                      newItem.universe === u ? "#1a6bff" : "#1E293B",
+                      newItem.universe === u ? "#E8A838" : "#1E293B",
                     borderWidth: newItem.universe === u ? 0 : 1,
                     borderColor: "#334155",
                   }}
-                  onPress={() => setNewItem({ ...newItem, universe: u })}
+                  onPress={() => handleUniverseChange(u)}
                 >
                   <Text
                     className="text-sm"
@@ -417,7 +544,7 @@ export default function EquipmentScreen() {
                   onValueChange={(v) =>
                     setNewItem({ ...newItem, is_high_value: v })
                   }
-                  trackColor={{ false: "#334155", true: "#1a6bff" }}
+                  trackColor={{ false: "#334155", true: "#E8A838" }}
                   thumbColor="#FFFFFF"
                 />
               </View>
@@ -438,6 +565,25 @@ export default function EquipmentScreen() {
                 numberOfLines={3}
               />
             </View>
+
+            {/* Dynamic universe-specific fields */}
+            {universeFields.length > 0 && (
+              <View style={{ marginTop: 24 }}>
+                <Text
+                  className="text-xs font-bold mb-3"
+                  style={{
+                    color: "#64748B",
+                    letterSpacing: 1,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  CARACTERISTIQUES
+                </Text>
+                {universeFields.map(renderField)}
+              </View>
+            )}
+
+            <View className="h-12" />
           </ScrollView>
         </View>
       </Modal>

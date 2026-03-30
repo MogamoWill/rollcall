@@ -70,8 +70,9 @@ export default function DashboardScreen() {
             <MaterialCommunityIcons
               name="movie-open-outline"
               size={28}
-              color="#1a6bff"
+              color="#E8A838"
             />
+
             <Text className="text-3xl font-bold" style={{ color: "#F1F5F9" }}>
               RollCall
             </Text>
@@ -81,17 +82,17 @@ export default function DashboardScreen() {
         {/* Quick Stats */}
         <View className="flex-row mb-6" style={{ gap: 10 }}>
           <View
-            className="flex-1 rounded-2xl p-4"
-            style={{ backgroundColor: "#1E293B", borderWidth: 1, borderColor: "#334155" }}
+            className="flex-1 rounded-xl p-4"
+            style={{ backgroundColor: "#1E293B", borderLeftWidth: 3, borderLeftColor: "#E8A838" }}
           >
             <View
               className="w-10 h-10 rounded-xl items-center justify-center mb-3"
-              style={{ backgroundColor: "#1a6bff20" }}
+              style={{ backgroundColor: "#E8A83820" }}
             >
               <MaterialCommunityIcons
                 name="movie-open"
                 size={22}
-                color="#1a6bff"
+                color="#E8A838"
               />
             </View>
             <Text className="text-2xl font-bold" style={{ color: "#F1F5F9" }}>
@@ -103,17 +104,17 @@ export default function DashboardScreen() {
           </View>
 
           <View
-            className="flex-1 rounded-2xl p-4"
-            style={{ backgroundColor: "#1E293B", borderWidth: 1, borderColor: "#334155" }}
+            className="flex-1 rounded-xl p-4"
+            style={{ backgroundColor: "#1E293B", borderLeftWidth: 3, borderLeftColor: "#2DD4BF" }}
           >
             <View
               className="w-10 h-10 rounded-xl items-center justify-center mb-3"
-              style={{ backgroundColor: "#8B5CF620" }}
+              style={{ backgroundColor: "#2DD4BF20" }}
             >
               <MaterialCommunityIcons
                 name="camera"
                 size={22}
-                color="#8B5CF6"
+                color="#2DD4BF"
               />
             </View>
             <Text className="text-2xl font-bold" style={{ color: "#F1F5F9" }}>
@@ -125,43 +126,43 @@ export default function DashboardScreen() {
           </View>
 
           <View
-            className="flex-1 rounded-2xl p-4"
-            style={{ backgroundColor: "#1E293B", borderWidth: 1, borderColor: "#334155" }}
+            className="flex-1 rounded-xl p-4"
+            style={{ backgroundColor: "#1E293B", borderLeftWidth: 3, borderLeftColor: "#F97316" }}
           >
             <View
               className="w-10 h-10 rounded-xl items-center justify-center mb-3"
-              style={{ backgroundColor: "#F59E0B20" }}
+              style={{ backgroundColor: "#F9731620" }}
             >
               <MaterialCommunityIcons
                 name="checkbox-marked-outline"
                 size={22}
-                color="#F59E0B"
+                color="#F97316"
               />
             </View>
             <Text className="text-2xl font-bold" style={{ color: "#F1F5F9" }}>
               {totalTasks}
             </Text>
             <Text className="text-xs mt-0.5" style={{ color: "#64748B" }}>
-              Taches a faire
+              Tâches à faire
             </Text>
           </View>
         </View>
 
         {/* Prochain tournage */}
         <View className="mb-6">
-          <View className="flex-row items-center mb-3" style={{ gap: 8 }}>
+          <View className="flex-row items-center mb-3" style={{ gap: 8, borderLeftWidth: 3, borderLeftColor: "#E8A838", paddingLeft: 10 }}>
             <MaterialCommunityIcons
               name="calendar-clock"
               size={18}
-              color="#F59E0B"
+              color="#E8A838"
             />
-            <Text className="text-lg font-bold" style={{ color: "#F1F5F9" }}>
+            <Text className="text-sm font-bold uppercase tracking-widest" style={{ color: "#94A3B8" }}>
               Prochain tournage
             </Text>
           </View>
           {upcomingShoots.length === 0 ? (
             <View
-              className="rounded-2xl p-6 items-center"
+              className="rounded-xl p-6 items-center"
               style={{ backgroundColor: "#1E293B", borderWidth: 1, borderColor: "#334155" }}
             >
               <MaterialCommunityIcons
@@ -177,7 +178,7 @@ export default function DashboardScreen() {
             upcomingShoots.map((project) => (
               <TouchableOpacity
                 key={project.id}
-                className="rounded-2xl p-4 mb-2"
+                className="rounded-xl p-4 mb-2"
                 style={{
                   backgroundColor: "#1E293B",
                   borderWidth: 1,
@@ -217,7 +218,7 @@ export default function DashboardScreen() {
                   <View className="items-end">
                     <Text
                       className="text-sm font-bold"
-                      style={{ color: "#1a6bff" }}
+                      style={{ color: "#E8A838" }}
                     >
                       {new Date(project.shoot_date!).toLocaleDateString(
                         "fr-FR",
@@ -250,58 +251,58 @@ export default function DashboardScreen() {
 
         {/* Recent Activity / Quick Actions */}
         <View className="mb-6">
-          <View className="flex-row items-center mb-3" style={{ gap: 8 }}>
+          <View className="flex-row items-center mb-3" style={{ gap: 8, borderLeftWidth: 3, borderLeftColor: "#E8A838", paddingLeft: 10 }}>
             <MaterialCommunityIcons
               name="lightning-bolt"
               size={18}
-              color="#1a6bff"
+              color="#E8A838"
             />
-            <Text className="text-lg font-bold" style={{ color: "#F1F5F9" }}>
+            <Text className="text-sm font-bold uppercase tracking-widest" style={{ color: "#94A3B8" }}>
               Actions rapides
             </Text>
           </View>
 
           <View style={{ gap: 10 }}>
             <TouchableOpacity
-              className="rounded-2xl p-4 flex-row items-center"
-              style={{ backgroundColor: "#1a6bff", gap: 12 }}
+              className="rounded-xl p-4 flex-row items-center"
+              style={{ backgroundColor: "#E8A838", gap: 12 }}
               onPress={() => router.push("/projects")}
               activeOpacity={0.8}
             >
               <View
                 className="w-10 h-10 rounded-xl items-center justify-center"
-                style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+                style={{ backgroundColor: "rgba(0,0,0,0.15)" }}
               >
                 <MaterialCommunityIcons
                   name="plus"
                   size={22}
-                  color="#FFFFFF"
+                  color="#0F172A"
                 />
               </View>
               <View className="flex-1">
-                <Text className="text-white font-bold text-base">
+                <Text className="font-bold text-base" style={{ color: "#0F172A" }}>
                   Nouveau projet
                 </Text>
                 <Text
                   className="text-xs"
-                  style={{ color: "rgba(255,255,255,0.7)" }}
+                  style={{ color: "rgba(15,23,42,0.6)" }}
                 >
-                  Demarrer un nouveau tournage
+                  Démarrer un nouveau tournage
                 </Text>
               </View>
               <MaterialCommunityIcons
                 name="chevron-right"
                 size={20}
-                color="rgba(255,255,255,0.5)"
+                color="rgba(15,23,42,0.4)"
               />
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="rounded-2xl p-4 flex-row items-center"
+              className="rounded-xl p-4 flex-row items-center"
               style={{
                 backgroundColor: "#1E293B",
-                borderWidth: 1,
-                borderColor: "#334155",
+                borderLeftWidth: 3,
+                borderLeftColor: "#2DD4BF",
                 gap: 12,
               }}
               onPress={() => router.push("/equipment")}
@@ -309,12 +310,12 @@ export default function DashboardScreen() {
             >
               <View
                 className="w-10 h-10 rounded-xl items-center justify-center"
-                style={{ backgroundColor: "#1a6bff20" }}
+                style={{ backgroundColor: "#2DD4BF20" }}
               >
                 <MaterialCommunityIcons
                   name="checkbox-marked-outline"
                   size={22}
-                  color="#1a6bff"
+                  color="#2DD4BF"
                 />
               </View>
               <View className="flex-1">
@@ -322,7 +323,7 @@ export default function DashboardScreen() {
                   Checker mon matos
                 </Text>
                 <Text className="text-xs" style={{ color: "#64748B" }}>
-                  Verifier l'inventaire equipement
+                  Vérifier l'inventaire équipement
                 </Text>
               </View>
               <MaterialCommunityIcons
@@ -333,11 +334,11 @@ export default function DashboardScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="rounded-2xl p-4 flex-row items-center"
+              className="rounded-xl p-4 flex-row items-center"
               style={{
                 backgroundColor: "#1E293B",
-                borderWidth: 1,
-                borderColor: "#334155",
+                borderLeftWidth: 3,
+                borderLeftColor: "#F97316",
                 gap: 12,
               }}
               onPress={() => router.push("/board")}
@@ -345,12 +346,12 @@ export default function DashboardScreen() {
             >
               <View
                 className="w-10 h-10 rounded-xl items-center justify-center"
-                style={{ backgroundColor: "#F59E0B20" }}
+                style={{ backgroundColor: "#F9731620" }}
               >
                 <MaterialCommunityIcons
                   name="view-column"
                   size={22}
-                  color="#F59E0B"
+                  color="#F97316"
                 />
               </View>
               <View className="flex-1">
@@ -358,7 +359,7 @@ export default function DashboardScreen() {
                   Board Kanban
                 </Text>
                 <Text className="text-xs" style={{ color: "#64748B" }}>
-                  Gerer tes taches de production
+                  Gérer tes tâches de production
                 </Text>
               </View>
               <MaterialCommunityIcons

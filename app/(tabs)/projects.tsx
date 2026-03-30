@@ -100,7 +100,7 @@ export default function ProjectsScreen() {
         <TouchableOpacity
           className="mr-2 px-4 py-2 rounded-full"
           style={{
-            backgroundColor: !filterStatus ? "#1a6bff" : "#1E293B",
+            backgroundColor: !filterStatus ? "#E8A838" : "#1E293B",
             borderWidth: !filterStatus ? 0 : 1,
             borderColor: "#334155",
           }}
@@ -120,7 +120,7 @@ export default function ProjectsScreen() {
               key={status}
               className="mr-2 px-4 py-2 rounded-full"
               style={{
-                backgroundColor: isActive ? "#1a6bff" : "#1E293B",
+                backgroundColor: isActive ? "#E8A838" : "#1E293B",
                 borderWidth: isActive ? 0 : 1,
                 borderColor: "#334155",
               }}
@@ -163,11 +163,11 @@ export default function ProjectsScreen() {
             return (
               <TouchableOpacity
                 key={project.id}
-                className="rounded-2xl p-4 mb-3"
+                className="rounded-xl p-4 mb-3"
                 style={{
                   backgroundColor: "#1E293B",
-                  borderWidth: 1,
-                  borderColor: "#334155",
+                  borderLeftWidth: 3,
+                  borderLeftColor: config.color,
                 }}
                 onLongPress={() => handleDelete(project)}
                 activeOpacity={0.7}
@@ -302,8 +302,8 @@ export default function ProjectsScreen() {
       <TouchableOpacity
         className="absolute bottom-6 right-6 w-14 h-14 rounded-full items-center justify-center"
         style={{
-          backgroundColor: "#1a6bff",
-          shadowColor: "#1a6bff",
+          backgroundColor: "#E8A838",
+          shadowColor: "#E8A838",
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.4,
           shadowRadius: 8,
@@ -327,7 +327,7 @@ export default function ProjectsScreen() {
             style={{ borderBottomWidth: 1, borderBottomColor: "#1E293B" }}
           >
             <TouchableOpacity onPress={() => setShowAddModal(false)}>
-              <Text className="text-base" style={{ color: "#1a6bff" }}>
+              <Text className="text-base" style={{ color: "#E8A838" }}>
                 Annuler
               </Text>
             </TouchableOpacity>
@@ -337,7 +337,7 @@ export default function ProjectsScreen() {
             <TouchableOpacity onPress={handleCreate}>
               <Text
                 className="text-base font-semibold"
-                style={{ color: "#1a6bff" }}
+                style={{ color: "#E8A838" }}
               >
                 Creer
               </Text>

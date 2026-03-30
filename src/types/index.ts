@@ -51,6 +51,7 @@ export interface Equipment {
   is_high_value: boolean;
   notes?: string;
   image_url?: string;
+  attributes?: Record<string, any>;
   user_id: string;
   created_at: string;
   updated_at: string;

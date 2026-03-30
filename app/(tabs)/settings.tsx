@@ -72,7 +72,7 @@ export default function SettingsScreen() {
       <View className="px-5 pt-4 pb-8">
         {/* Profile */}
         <View
-          className="rounded-2xl p-5 mb-4"
+          className="rounded-xl p-5 mb-4"
           style={{
             backgroundColor: "#1E293B",
             borderWidth: 1,
@@ -82,9 +82,9 @@ export default function SettingsScreen() {
           <View className="flex-row items-center" style={{ gap: 14 }}>
             <View
               className="w-14 h-14 rounded-full items-center justify-center"
-              style={{ backgroundColor: "#1a6bff20" }}
+              style={{ backgroundColor: "#E8A83820" }}
             >
-              <Text className="text-xl font-bold" style={{ color: "#1a6bff" }}>
+              <Text className="text-xl font-bold" style={{ color: "#E8A838" }}>
                 {user?.email?.charAt(0).toUpperCase() ?? "?"}
               </Text>
             </View>
@@ -100,16 +100,18 @@ export default function SettingsScreen() {
         </View>
 
         {/* Integrations */}
-        <Text
-          className="text-xs font-semibold uppercase tracking-wider mb-2 mt-4 px-1"
-          style={{ color: "#475569" }}
-        >
-          Integrations
-        </Text>
+        <View className="mb-2 mt-4" style={{ borderLeftWidth: 3, borderLeftColor: "#E8A838", paddingLeft: 10 }}>
+          <Text
+            className="text-xs font-bold uppercase tracking-widest"
+            style={{ color: "#94A3B8" }}
+          >
+            Intégrations
+          </Text>
+        </View>
 
         {/* Monday.com */}
         <View
-          className="rounded-2xl p-4 mb-2"
+          className="rounded-xl p-4 mb-2"
           style={{
             backgroundColor: "#1E293B",
             borderWidth: 1,
@@ -199,7 +201,7 @@ export default function SettingsScreen() {
 
         {/* Microsoft (Teams / Outlook) */}
         <View
-          className="rounded-2xl p-4 mb-2"
+          className="rounded-xl p-4 mb-2"
           style={{
             backgroundColor: "#1E293B",
             borderWidth: 1,
@@ -256,15 +258,17 @@ export default function SettingsScreen() {
         </View>
 
         {/* App info */}
-        <Text
-          className="text-xs font-semibold uppercase tracking-wider mb-2 mt-6 px-1"
-          style={{ color: "#475569" }}
-        >
-          Application
-        </Text>
+        <View className="mb-2 mt-6" style={{ borderLeftWidth: 3, borderLeftColor: "#E8A838", paddingLeft: 10 }}>
+          <Text
+            className="text-xs font-bold uppercase tracking-widest"
+            style={{ color: "#94A3B8" }}
+          >
+            Application
+          </Text>
+        </View>
 
         <View
-          className="rounded-2xl"
+          className="rounded-xl"
           style={{
             backgroundColor: "#1E293B",
             borderWidth: 1,

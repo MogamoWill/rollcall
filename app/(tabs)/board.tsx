@@ -151,7 +151,7 @@ export default function BoardScreen() {
         style={{ backgroundColor: "#0F172A" }}
       >
         <View
-          className="w-20 h-20 rounded-2xl items-center justify-center mb-4"
+          className="w-20 h-20 rounded-xl items-center justify-center mb-4"
           style={{ backgroundColor: "#1E293B" }}
         >
           <MaterialCommunityIcons
@@ -171,11 +171,11 @@ export default function BoardScreen() {
         </Text>
         <TouchableOpacity
           className="px-6 py-3 rounded-xl"
-          style={{ backgroundColor: "#1a6bff" }}
+          style={{ backgroundColor: "#E8A838" }}
           onPress={() => setShowNewBoard(true)}
           activeOpacity={0.8}
         >
-          <Text className="text-white font-bold">Creer un board</Text>
+          <Text className="font-bold" style={{ color: "#0F172A" }}>Créer un board</Text>
         </TouchableOpacity>
 
         {/* New board modal (same as below) */}
@@ -184,7 +184,7 @@ export default function BoardScreen() {
             className="flex-1 justify-center px-8"
             style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
           >
-            <View className="rounded-2xl p-6" style={{ backgroundColor: "#1E293B" }}>
+            <View className="rounded-xl p-6" style={{ backgroundColor: "#1E293B" }}>
               <Text
                 className="text-lg font-bold mb-4"
                 style={{ color: "#F1F5F9" }}
@@ -217,10 +217,10 @@ export default function BoardScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   className="flex-1 py-3 rounded-xl items-center"
-                  style={{ backgroundColor: "#1a6bff" }}
+                  style={{ backgroundColor: "#E8A838" }}
                   onPress={handleCreateBoard}
                 >
-                  <Text className="text-white font-bold">Creer</Text>
+                  <Text className="font-bold" style={{ color: "#0F172A" }}>Créer</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -232,6 +232,7 @@ export default function BoardScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: "#0F172A" }}>
+      <View style={{ maxWidth: 1200, width: "100%", alignSelf: "center", flex: 1 }}>
       {/* Board selector */}
       <ScrollView
         horizontal
@@ -246,7 +247,7 @@ export default function BoardScreen() {
               key={board.id}
               className="mr-2 px-4 py-2 rounded-full"
               style={{
-                backgroundColor: isActive ? "#1a6bff" : "#1E293B",
+                backgroundColor: isActive ? "#E8A838" : "#1E293B",
                 borderWidth: isActive ? 0 : 1,
                 borderColor: "#334155",
               }}
@@ -293,7 +294,7 @@ export default function BoardScreen() {
             return (
               <View
                 key={column.id}
-                className="rounded-2xl"
+                className="rounded-xl"
                 style={{
                   width: COLUMN_WIDTH,
                   backgroundColor: "#1E293B",
@@ -464,7 +465,7 @@ export default function BoardScreen() {
           className="flex-1 justify-center px-8"
           style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
         >
-          <View className="rounded-2xl p-6" style={{ backgroundColor: "#1E293B" }}>
+          <View className="rounded-xl p-6" style={{ backgroundColor: "#1E293B" }}>
             <Text
               className="text-lg font-bold mb-4"
               style={{ color: "#F1F5F9" }}
@@ -515,10 +516,10 @@ export default function BoardScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 className="flex-1 py-3 rounded-xl items-center"
-                style={{ backgroundColor: "#1a6bff" }}
+                style={{ backgroundColor: "#E8A838" }}
                 onPress={handleAddCard}
               >
-                <Text className="text-white font-bold">Ajouter</Text>
+                <Text className="font-bold" style={{ color: "#0F172A" }}>Ajouter</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -531,7 +532,7 @@ export default function BoardScreen() {
           className="flex-1 justify-center px-8"
           style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
         >
-          <View className="rounded-2xl p-6" style={{ backgroundColor: "#1E293B" }}>
+          <View className="rounded-xl p-6" style={{ backgroundColor: "#1E293B", maxWidth: 420, width: "100%", alignSelf: "center" }}>
             <Text
               className="text-lg font-bold mb-4"
               style={{ color: "#F1F5F9" }}
@@ -564,15 +565,16 @@ export default function BoardScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 className="flex-1 py-3 rounded-xl items-center"
-                style={{ backgroundColor: "#1a6bff" }}
+                style={{ backgroundColor: "#E8A838" }}
                 onPress={handleCreateBoard}
               >
-                <Text className="text-white font-bold">Creer</Text>
+                <Text className="font-bold" style={{ color: "#0F172A" }}>Créer</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
+      </View>
     </View>
   );
 }

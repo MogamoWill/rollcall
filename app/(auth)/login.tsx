@@ -82,8 +82,8 @@ export default function LoginScreen() {
           {/* Logo & Branding */}
           <View className="items-center mb-10">
             <View
-              className="w-20 h-20 rounded-2xl items-center justify-center mb-5"
-              style={{ backgroundColor: "#1a6bff" }}
+              className="w-20 h-20 rounded-xl items-center justify-center mb-5"
+              style={{ backgroundColor: "#E8A838" }}
             >
               <MaterialCommunityIcons
                 name="movie-open-outline"
@@ -93,12 +93,12 @@ export default function LoginScreen() {
             </View>
             <Text
               className="text-4xl font-bold mb-2"
-              style={{ color: "#FFFFFF" }}
+              style={{ color: "#FDF4E7" }}
             >
               RollCall
             </Text>
             <Text className="text-base" style={{ color: "#94A3B8" }}>
-              Ton assistant realisateur
+              Ton assistant réalisateur
             </Text>
           </View>
 
@@ -106,8 +106,8 @@ export default function LoginScreen() {
           <View className="mb-6" style={{ gap: 14 }}>
             <View>
               <Text
-                className="text-xs font-semibold uppercase mb-1.5 tracking-wider"
-                style={{ color: "#64748B" }}
+                className="text-xs font-bold uppercase mb-1.5 tracking-widest"
+                style={{ color: "#64748B", borderLeftWidth: 2, borderLeftColor: "#E8A838", paddingLeft: 8 }}
               >
                 Email
               </Text>
@@ -129,8 +129,8 @@ export default function LoginScreen() {
             </View>
             <View>
               <Text
-                className="text-xs font-semibold uppercase mb-1.5 tracking-wider"
-                style={{ color: "#64748B" }}
+                className="text-xs font-bold uppercase mb-1.5 tracking-widest"
+                style={{ color: "#64748B", borderLeftWidth: 2, borderLeftColor: "#E8A838", paddingLeft: 8 }}
               >
                 Mot de passe
               </Text>
@@ -155,13 +155,13 @@ export default function LoginScreen() {
           <TouchableOpacity
             className="rounded-xl py-4 items-center mb-6"
             style={{
-              backgroundColor: loading ? "#334155" : "#1a6bff",
+              backgroundColor: loading ? "#334155" : "#E8A838",
             }}
             onPress={handleEmailLogin}
             disabled={loading}
             activeOpacity={0.8}
           >
-            <Text className="text-white font-bold text-base">
+            <Text className="font-bold text-base" style={{ color: "#0F172A" }}>
               {loading ? "Connexion..." : "Se connecter"}
             </Text>
           </TouchableOpacity>
@@ -181,7 +181,7 @@ export default function LoginScreen() {
               className="flex-row items-center justify-center rounded-xl py-3.5"
               style={{
                 borderWidth: 1,
-                borderColor: "#334155",
+                borderColor: "#E8A83840",
                 backgroundColor: "#1E293B",
                 gap: 10,
               }}
@@ -215,7 +215,7 @@ export default function LoginScreen() {
             <Text style={{ color: "#64748B" }}>Pas encore de compte ? </Text>
             <Link href="/(auth)/register" asChild>
               <TouchableOpacity>
-                <Text className="font-bold" style={{ color: "#1a6bff" }}>
+                <Text className="font-bold" style={{ color: "#E8A838" }}>
                   S'inscrire
                 </Text>
               </TouchableOpacity>
