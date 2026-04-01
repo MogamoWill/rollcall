@@ -109,7 +109,8 @@ export interface Shot {
   priority: ShotPriority;
   is_completed: boolean;
   notes?: string;
-  order: number;
+  number?: number;
+  sort_order: number;
 }
 
 // ============================================

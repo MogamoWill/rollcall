@@ -10,6 +10,7 @@ import {
   Switch,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEquipmentStore } from "@/stores/equipmentStore";
 import {
   UNIVERSE_LABELS,
@@ -21,6 +22,7 @@ import {
   getAttributeSummary,
   type EquipmentFieldConfig,
 } from "@/constants/equipmentFields";
+import { EquipmentQRCode } from "@/components/QRCode";
 
 const UNIVERSES = Object.keys(UNIVERSE_LABELS) as EquipmentUniverse[];
 
@@ -71,10 +73,30 @@ export default function EquipmentScreen() {
   >("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [newItem, setNewItem] = useState({ ...INITIAL_NEW_ITEM });
+  const [selectedItem, setSelectedItem] = useState<Equipment | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const { scannedId } = useLocalSearchParams<{ scannedId?: string }>();
 
   useEffect(() => {
     fetchEquipment().catch(() => {});
   }, [fetchEquipment]);
+
+  // Handle scanned QR code result
+  useEffect(() => {
+    if (scannedId && items.length > 0) {
+      // The QR code value is "rollcall:equipment:<id>" or just the id
+      const itemId = scannedId.replace("rollcall:equipment:", "");
+      const found = items.find(
+        (i) => i.id === itemId || i.qr_code === scannedId
+      );
+      if (found) {
+        setSelectedItem(found);
+        setShowDetailModal(true);
+      } else {
+        Alert.alert("Non trouve", "Aucun equipement ne correspond a ce QR code");
+      }
+    }
+  }, [scannedId, items]);
 
   const filteredItems =
     selectedCategory === "all"
@@ -230,13 +252,23 @@ export default function EquipmentScreen() {
   return (
     <View className="flex-1" style={{ backgroundColor: "#0F172A" }}>
       <View style={{ maxWidth: 720, width: "100%", alignSelf: "center", flex: 1 }}>
-      {/* Category tabs */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        className="pt-3 pb-2 px-4"
-        style={{ maxHeight: 52 }}
-      >
+      {/* Header with scan button + category tabs */}
+      <View className="flex-row items-center pt-3 pb-2 px-4" style={{ gap: 8 }}>
+        <TouchableOpacity
+          style={{ backgroundColor: "#E8A83820", padding: 8, borderRadius: 8 }}
+          onPress={() => router.push("/scanner")}
+        >
+          <MaterialCommunityIcons
+            name="qrcode-scan"
+            size={22}
+            color="#E8A838"
+          />
+        </TouchableOpacity>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ maxHeight: 44, flex: 1 }}
+        >
         {CATEGORY_TABS.map((tab) => {
           const isActive = selectedCategory === tab.key;
           const count = getUniverseCount(tab.key);
@@ -280,6 +312,7 @@ export default function EquipmentScreen() {
           );
         })}
       </ScrollView>
+      </View>
 
       {/* Equipment List */}
       <ScrollView className="flex-1 px-4 pt-3">
@@ -394,6 +427,68 @@ export default function EquipmentScreen() {
       >
         <MaterialCommunityIcons name="plus" size={26} color="#FFFFFF" />
       </TouchableOpacity>
+      </View>
+
+      {/* Detail Modal (QR code view) */}
+      <Modal
+        visible={showDetailModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <View className="flex-1" style={{ backgroundColor: "#0F172A" }}>
+          <View
+            className="flex-row items-center justify-between px-5 pt-4 pb-3"
+            style={{ borderBottomWidth: 1, borderBottomColor: "#1E293B" }}
+          >
+            <TouchableOpacity onPress={() => { setShowDetailModal(false); setSelectedItem(null); }}>
+              <Text className="text-base" style={{ color: "#E8A838" }}>Fermer</Text>
+            </TouchableOpacity>
+            <Text className="text-lg font-bold" style={{ color: "#F1F5F9" }}>
+              {selectedItem?.name ?? "Détail"}
+            </Text>
+            <View style={{ width: 50 }} />
+          </View>
+          {selectedItem && (
+            <ScrollView className="px-5 pt-6" contentContainerStyle={{ alignItems: "center" }}>
+              {selectedItem.is_high_value && selectedItem.qr_code && (
+                <EquipmentQRCode
+                  value={selectedItem.qr_code}
+                  size={200}
+                  label={selectedItem.name}
+                />
+              )}
+              <View className="w-full mt-6" style={{ gap: 12 }}>
+                {selectedItem.brand && (
+                  <View className="flex-row justify-between p-3 rounded-xl" style={{ backgroundColor: "#1E293B" }}>
+                    <Text style={{ color: "#64748B" }}>Marque</Text>
+                    <Text style={{ color: "#F1F5F9", fontWeight: "600" }}>{selectedItem.brand}</Text>
+                  </View>
+                )}
+                {selectedItem.model && (
+                  <View className="flex-row justify-between p-3 rounded-xl" style={{ backgroundColor: "#1E293B" }}>
+                    <Text style={{ color: "#64748B" }}>Modèle</Text>
+                    <Text style={{ color: "#F1F5F9", fontWeight: "600" }}>{selectedItem.model}</Text>
+                  </View>
+                )}
+                {selectedItem.serial_number && (
+                  <View className="flex-row justify-between p-3 rounded-xl" style={{ backgroundColor: "#1E293B" }}>
+                    <Text style={{ color: "#64748B" }}>N° série</Text>
+                    <Text style={{ color: "#F1F5F9", fontWeight: "600" }}>{selectedItem.serial_number}</Text>
+                  </View>
+                )}
+                {selectedItem.attributes && Object.entries(selectedItem.attributes).map(([key, val]) => (
+                  val ? (
+                    <View key={key} className="flex-row justify-between p-3 rounded-xl" style={{ backgroundColor: "#1E293B" }}>
+                      <Text style={{ color: "#64748B" }}>{key}</Text>
+                      <Text style={{ color: "#F1F5F9", fontWeight: "600" }}>{String(val)}</Text>
+                    </View>
+                  ) : null
+                ))}
+              </View>
+            </ScrollView>
+          )}
+        </View>
+      </Modal>
 
       {/* Add Modal */}
       <Modal
@@ -587,7 +682,6 @@ export default function EquipmentScreen() {
           </ScrollView>
         </View>
       </Modal>
-      </View>
     </View>
   );
 }

@@ -28,6 +28,12 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="scanner"
+          options={{ presentation: "fullScreenModal", headerShown: false }}
+        />
+        <Stack.Screen name="project/[id]/shots" />
+        <Stack.Screen name="project/[id]/checklists" />
       </Stack>
     </>
   );

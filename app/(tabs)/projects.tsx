@@ -9,6 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { useProjectStore } from "@/stores/projectStore";
 import type { Project, ProjectStatus } from "@/types";
 
@@ -291,6 +292,26 @@ export default function ProjectsScreen() {
                     )}
                   </View>
                 )}
+
+                {/* Action buttons */}
+                <View className="flex-row mt-3 pt-3" style={{ borderTopWidth: 1, borderTopColor: '#334155', gap: 8 }}>
+                  <TouchableOpacity
+                    className="flex-1 flex-row items-center justify-center py-2 rounded-lg"
+                    style={{ backgroundColor: '#E8A83815', gap: 6 }}
+                    onPress={() => router.push(`/project/${project.id}/shots`)}
+                  >
+                    <MaterialCommunityIcons name="format-list-checks" size={16} color="#E8A838" />
+                    <Text style={{ color: '#E8A838', fontSize: 13, fontWeight: '600' }}>Shot list</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    className="flex-1 flex-row items-center justify-center py-2 rounded-lg"
+                    style={{ backgroundColor: '#8B5CF615', gap: 6 }}
+                    onPress={() => router.push(`/project/${project.id}/checklists`)}
+                  >
+                    <MaterialCommunityIcons name="checkbox-marked-outline" size={16} color="#8B5CF6" />
+                    <Text style={{ color: '#8B5CF6', fontSize: 13, fontWeight: '600' }}>Checklists</Text>
+                  </TouchableOpacity>
+                </View>
               </TouchableOpacity>
             );
           })
