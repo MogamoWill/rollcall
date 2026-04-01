@@ -154,7 +154,7 @@ export interface BoardColumn {
   board_id: string;
   name: string;
   color: string;
-  order: number;
+  sort_order: number;
   cards: BoardCard[];
 }
 
@@ -166,7 +166,7 @@ export interface BoardCard {
   description?: string;
   due_date?: string;
   labels: string[];
-  order: number;
+  sort_order: number;
   project?: Project;
 }
 

@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
-  Alert,
   Switch,
   ActivityIndicator,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { showAlert } from "@/lib/alert";
 import { router, useLocalSearchParams } from "expo-router";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImageManipulator from "expo-image-manipulator";
@@ -121,7 +121,7 @@ export default function EquipmentScreen() {
     if (!cameraPermission?.granted) {
       const result = await requestCameraPermission();
       if (!result.granted) {
-        Alert.alert("Permission requise", "L'acces a la camera est necessaire pour identifier l'equipement.");
+        showAlert("Permission requise", "L'acces a la camera est necessaire pour identifier l'equipement.");
         return;
       }
     }
@@ -150,7 +150,7 @@ export default function EquipmentScreen() {
       const result = await identifyFromPhoto(manipulated.base64);
       applyAIResult(result);
     } catch (error) {
-      Alert.alert("Erreur", "Impossible d'identifier l'equipement. Reessayez ou remplissez manuellement.");
+      showAlert("Erreur", "Impossible d'identifier l'equipement. Reessayez ou remplissez manuellement.");
     } finally {
       setAiLoading(false);
     }
@@ -201,7 +201,7 @@ export default function EquipmentScreen() {
         setSelectedItem(found);
         setShowDetailModal(true);
       } else {
-        Alert.alert("Non trouve", "Aucun equipement ne correspond a ce QR code");
+        showAlert("Non trouve", "Aucun equipement ne correspond a ce QR code");
       }
     }
   }, [scannedId, items]);
@@ -213,7 +213,7 @@ export default function EquipmentScreen() {
 
   const handleAdd = async () => {
     if (!newItem.name) {
-      Alert.alert("Erreur", "Le nom est obligatoire");
+      showAlert("Erreur", "Le nom est obligatoire");
       return;
     }
     try {
@@ -221,12 +221,12 @@ export default function EquipmentScreen() {
       setShowAddModal(false);
       setNewItem({ ...INITIAL_NEW_ITEM });
     } catch {
-      Alert.alert("Erreur", "Impossible d'ajouter l'equipement");
+      showAlert("Erreur", "Impossible d'ajouter l'equipement");
     }
   };
 
   const handleDelete = (item: Equipment) => {
-    Alert.alert("Supprimer", `Supprimer ${item.name} ?`, [
+    showAlert("Supprimer", `Supprimer ${item.name} ?`, [
       { text: "Annuler", style: "cancel" },
       {
         text: "Supprimer",

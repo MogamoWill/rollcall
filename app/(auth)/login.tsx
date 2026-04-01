@@ -4,12 +4,12 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from "react-native";
 import { Link, router } from "expo-router";
+import { showAlert } from "@/lib/alert";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/lib/supabase";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -25,7 +25,7 @@ export default function LoginScreen() {
 
   const handleEmailLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Erreur", "Remplis tous les champs");
+      showAlert("Erreur", "Remplis tous les champs");
       return;
     }
     setLoading(true);
@@ -35,7 +35,7 @@ export default function LoginScreen() {
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Erreur de connexion";
-      Alert.alert("Erreur", message);
+      showAlert("Erreur", message);
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ export default function LoginScreen() {
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Erreur Google";
-      Alert.alert("Erreur", message);
+      showAlert("Erreur", message);
     }
   };
 
@@ -63,7 +63,7 @@ export default function LoginScreen() {
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Erreur Apple";
-      Alert.alert("Erreur", message);
+      showAlert("Erreur", message);
     }
   };
 

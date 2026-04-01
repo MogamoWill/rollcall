@@ -5,10 +5,10 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
   Switch,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { showAlert } from "@/lib/alert";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/lib/supabase";
 
@@ -35,7 +35,7 @@ export default function SettingsScreen() {
 
   const handleSaveMondayKey = async () => {
     if (!mondayApiKey) {
-      Alert.alert("Erreur", "Entre ta cle API Monday");
+      showAlert("Erreur", "Entre ta cle API Monday");
       return;
     }
     try {
@@ -45,9 +45,9 @@ export default function SettingsScreen() {
       });
       setMondayConnected(true);
       setMondayApiKey("");
-      Alert.alert("Succes", "Monday.com connecte !");
+      showAlert("Succes", "Monday.com connecte !");
     } catch {
-      Alert.alert("Erreur", "Impossible de sauvegarder la cle");
+      showAlert("Erreur", "Impossible de sauvegarder la cle");
     }
   };
 
@@ -60,7 +60,7 @@ export default function SettingsScreen() {
   };
 
   const handleSignOut = () => {
-    Alert.alert("Deconnexion", "Tu veux te deconnecter ?", [
+    showAlert("Deconnexion", "Tu veux te deconnecter ?", [
       { text: "Annuler", style: "cancel" },
       { text: "Deconnecter", style: "destructive", onPress: signOut },
     ]);

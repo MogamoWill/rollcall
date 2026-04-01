@@ -12,7 +12,7 @@ interface BoardState {
   createBoard: (name: string) => Promise<Board>;
   setCurrentBoard: (board: Board | null) => void;
   addColumn: (boardId: string, name: string, color: string) => Promise<void>;
-  addCard: (columnId: string, card: Omit<BoardCard, "id" | "order">) => Promise<void>;
+  addCard: (columnId: string, card: Omit<BoardCard, "id" | "sort_order">) => Promise<void>;
   moveCard: (cardId: string, toColumnId: string, newOrder: number) => Promise<void>;
   updateCard: (cardId: string, updates: Partial<BoardCard>) => Promise<void>;
   deleteCard: (cardId: string) => Promise<void>;
@@ -36,11 +36,11 @@ export const useBoardStore = create<BoardState>()(
         const boards = (data ?? []).map((board: Board) => ({
           ...board,
           columns: (board.columns ?? [])
-            .sort((a: BoardColumn, b: BoardColumn) => a.order - b.order)
+            .sort((a: BoardColumn, b: BoardColumn) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
             .map((col: BoardColumn) => ({
               ...col,
               cards: (col.cards ?? []).sort(
-                (a: BoardCard, b: BoardCard) => a.order - b.order
+                (a: BoardCard, b: BoardCard) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
               ),
             })),
         }));
@@ -49,19 +49,21 @@ export const useBoardStore = create<BoardState>()(
       },
 
       createBoard: async (name) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
         const { data: board, error } = await supabase
           .from("boards")
-          .insert({ name })
+          .insert({ name, user_id: user.id })
           .select()
           .single();
         if (error) throw error;
 
         // Create default columns
         const defaultColumns = [
-          { board_id: board.id, name: "À faire", color: "#94A3B8", order: 0, user_id: board.user_id },
-          { board_id: board.id, name: "En cours", color: "#3B82F6", order: 1, user_id: board.user_id },
-          { board_id: board.id, name: "Review", color: "#F59E0B", order: 2, user_id: board.user_id },
-          { board_id: board.id, name: "Terminé", color: "#22C55E", order: 3, user_id: board.user_id },
+          { board_id: board.id, name: "À faire", color: "#94A3B8", sort_order: 0, user_id: user.id },
+          { board_id: board.id, name: "En cours", color: "#3B82F6", sort_order: 1, user_id: user.id },
+          { board_id: board.id, name: "Review", color: "#F59E0B", sort_order: 2, user_id: user.id },
+          { board_id: board.id, name: "Terminé", color: "#22C55E", sort_order: 3, user_id: user.id },
         ];
 
         const { data: columns, error: colError } = await supabase
@@ -81,12 +83,14 @@ export const useBoardStore = create<BoardState>()(
       setCurrentBoard: (board) => set({ currentBoard: board }),
 
       addColumn: async (boardId, name, color) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
         const board = get().boards.find((b) => b.id === boardId);
         const order = board?.columns?.length ?? 0;
 
         const { data, error } = await supabase
           .from("board_columns")
-          .insert({ board_id: boardId, name, color, order })
+          .insert({ board_id: boardId, name, color, sort_order: order, user_id: user.id })
           .select()
           .single();
         if (error) throw error;
@@ -111,7 +115,7 @@ export const useBoardStore = create<BoardState>()(
 
         const { data, error } = await supabase
           .from("board_cards")
-          .insert({ ...card, column_id: columnId, order })
+          .insert({ ...card, column_id: columnId, sort_order: order })
           .select()
           .single();
         if (error) throw error;
@@ -131,7 +135,7 @@ export const useBoardStore = create<BoardState>()(
       moveCard: async (cardId, toColumnId, newOrder) => {
         const { error } = await supabase
           .from("board_cards")
-          .update({ column_id: toColumnId, order: newOrder })
+          .update({ column_id: toColumnId, sort_order: newOrder })
           .eq("id", cardId);
         if (error) throw error;
 
@@ -167,7 +171,7 @@ export const useBoardStore = create<BoardState>()(
                     cards.splice(newOrder, 0, {
                       ...movedCard!,
                       column_id: toColumnId,
-                      order: newOrder,
+                      sort_order: newOrder,
                     });
                     return { ...c, cards };
                   }

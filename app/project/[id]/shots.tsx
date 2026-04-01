@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { showAlert } from "@/lib/alert";
 import { useLocalSearchParams, router } from "expo-router";
 import { useShotStore } from "@/stores/shotStore";
 import { useProjectStore } from "@/stores/projectStore";
@@ -85,7 +85,7 @@ export default function ShotsScreen() {
 
   const handleAddShot = async () => {
     if (!newShot.description.trim()) {
-      Alert.alert("Erreur", "La description est obligatoire");
+      showAlert("Erreur", "La description est obligatoire");
       return;
     }
     try {
@@ -105,12 +105,12 @@ export default function ShotsScreen() {
         notes: "",
       });
     } catch {
-      Alert.alert("Erreur", "Impossible d'ajouter le plan");
+      showAlert("Erreur", "Impossible d'ajouter le plan");
     }
   };
 
   const handleDelete = (shotId: string, description: string) => {
-    Alert.alert("Supprimer", `Supprimer "${description}" ?`, [
+    showAlert("Supprimer", `Supprimer "${description}" ?`, [
       { text: "Annuler", style: "cancel" },
       {
         text: "Supprimer",

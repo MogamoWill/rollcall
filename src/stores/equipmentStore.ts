@@ -35,10 +35,12 @@ export const useEquipmentStore = create<EquipmentState>()(
       },
 
       addEquipment: async (item) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
         // For high-value items, generate a QR code value using the Supabase-generated ID
         const { data, error } = await supabase
           .from("equipment_items")
-          .insert(item)
+          .insert({ ...item, user_id: user.id })
           .select()
           .single();
         if (error) throw error;

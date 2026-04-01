@@ -4,12 +4,12 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from "react-native";
 import { Link, router } from "expo-router";
+import { showAlert } from "@/lib/alert";
 import { useAuthStore } from "@/stores/authStore";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -22,22 +22,22 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     if (!email || !password || !confirmPassword) {
-      Alert.alert("Erreur", "Remplis tous les champs");
+      showAlert("Erreur", "Remplis tous les champs");
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert("Erreur", "Les mots de passe ne correspondent pas");
+      showAlert("Erreur", "Les mots de passe ne correspondent pas");
       return;
     }
     if (password.length < 6) {
-      Alert.alert("Erreur", "Le mot de passe doit faire au moins 6 caracteres");
+      showAlert("Erreur", "Le mot de passe doit faire au moins 6 caracteres");
       return;
     }
 
     setLoading(true);
     try {
       await signUpWithEmail(email, password);
-      Alert.alert(
+      showAlert(
         "Inscription reussie",
         "Verifie ton email pour confirmer ton compte",
         [{ text: "OK", onPress: () => router.replace("/(auth)/login") }]
@@ -45,7 +45,7 @@ export default function RegisterScreen() {
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Erreur d'inscription";
-      Alert.alert("Erreur", message);
+      showAlert("Erreur", message);
     } finally {
       setLoading(false);
     }

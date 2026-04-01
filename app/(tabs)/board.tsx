@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
-  Alert,
   Dimensions,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { showAlert } from "@/lib/alert";
 import { useBoardStore } from "@/stores/boardStore";
 import type { BoardCard, BoardColumn } from "@/types";
 
@@ -60,7 +60,7 @@ export default function BoardScreen() {
       setShowNewBoard(false);
       setNewBoardName("");
     } catch {
-      Alert.alert("Erreur", "Impossible de creer le board");
+      showAlert("Erreur", "Impossible de creer le board");
     }
   };
 
@@ -82,7 +82,7 @@ export default function BoardScreen() {
         .boards.find((b) => b.id === currentBoard?.id);
       if (updated) setCurrentBoard(updated);
     } catch {
-      Alert.alert("Erreur", "Impossible d'ajouter la carte");
+      showAlert("Erreur", "Impossible d'ajouter la carte");
     }
   };
 
@@ -111,12 +111,12 @@ export default function BoardScreen() {
         .boards.find((b) => b.id === currentBoard.id);
       if (updated) setCurrentBoard(updated);
     } catch {
-      Alert.alert("Erreur", "Impossible de deplacer la carte");
+      showAlert("Erreur", "Impossible de deplacer la carte");
     }
   };
 
   const handleDeleteCard = (card: BoardCard) => {
-    Alert.alert("Supprimer", `Supprimer "${card.title}" ?`, [
+    showAlert("Supprimer", `Supprimer "${card.title}" ?`, [
       { text: "Annuler", style: "cancel" },
       {
         text: "Supprimer",

@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
-  Alert,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { showAlert } from "@/lib/alert";
 import { router } from "expo-router";
 import { useProjectStore } from "@/stores/projectStore";
 import type { Project, ProjectStatus } from "@/types";
@@ -56,7 +56,7 @@ export default function ProjectsScreen() {
 
   const handleCreate = async () => {
     if (!newProject.name) {
-      Alert.alert("Erreur", "Le nom du projet est obligatoire");
+      alert("Le nom du projet est obligatoire");
       return;
     }
     try {
@@ -69,13 +69,14 @@ export default function ProjectsScreen() {
         location: "",
         status: "draft",
       });
-    } catch {
-      Alert.alert("Erreur", "Impossible de creer le projet");
+    } catch (e) {
+      console.error("Create project error:", e);
+      showAlert("Erreur", "Impossible de créer le projet");
     }
   };
 
   const handleDelete = (project: Project) => {
-    Alert.alert("Supprimer", `Supprimer "${project.name}" ?`, [
+    showAlert("Supprimer", `Supprimer "${project.name}" ?`, [
       { text: "Annuler", style: "cancel" },
       {
         text: "Supprimer",

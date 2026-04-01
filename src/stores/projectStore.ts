@@ -44,9 +44,11 @@ export const useProjectStore = create<ProjectState>()(
       },
 
       createProject: async (project) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
         const { data, error } = await supabase
           .from("projects")
-          .insert(project)
+          .insert({ ...project, user_id: user.id })
           .select()
           .single();
         if (error) throw error;

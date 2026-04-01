@@ -266,7 +266,7 @@ export default function DashboardScreen() {
             <TouchableOpacity
               className="rounded-xl p-4 flex-row items-center"
               style={{ backgroundColor: "#E8A838", gap: 12 }}
-              onPress={() => router.push("/projects")}
+              onPress={() => router.push("/(tabs)/projects")}
               activeOpacity={0.8}
             >
               <View
@@ -305,7 +305,7 @@ export default function DashboardScreen() {
                 borderLeftColor: "#2DD4BF",
                 gap: 12,
               }}
-              onPress={() => router.push("/equipment")}
+              onPress={() => router.push("/(tabs)/equipment")}
               activeOpacity={0.7}
             >
               <View
@@ -341,7 +341,7 @@ export default function DashboardScreen() {
                 borderLeftColor: "#F97316",
                 gap: 12,
               }}
-              onPress={() => router.push("/board")}
+              onPress={() => router.push("/(tabs)/board")}
               activeOpacity={0.7}
             >
               <View

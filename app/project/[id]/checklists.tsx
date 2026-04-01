@@ -5,10 +5,10 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { showAlert } from "@/lib/alert";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useChecklistStore } from "@/stores/checklistStore";
 import { useProjectStore } from "@/stores/projectStore";
@@ -49,7 +49,7 @@ export default function ChecklistsScreen() {
       await addItem(id, activePhase, text);
       setNewItemText("");
     } catch {
-      Alert.alert("Erreur", "Impossible d'ajouter l'item");
+      showAlert("Erreur", "Impossible d'ajouter l'item");
     }
   }, [newItemText, id, activePhase, addItem]);
 
@@ -58,7 +58,7 @@ export default function ChecklistsScreen() {
     try {
       await applyTemplate(id, activePhase);
     } catch {
-      Alert.alert("Erreur", "Impossible d'appliquer le template");
+      showAlert("Erreur", "Impossible d'appliquer le template");
     }
   }, [id, activePhase, applyTemplate]);
 
@@ -67,7 +67,7 @@ export default function ChecklistsScreen() {
       try {
         await toggleItem(itemId);
       } catch {
-        Alert.alert("Erreur", "Impossible de modifier l'item");
+        showAlert("Erreur", "Impossible de modifier l'item");
       }
     },
     [toggleItem]
@@ -75,7 +75,7 @@ export default function ChecklistsScreen() {
 
   const handleDelete = useCallback(
     (itemId: string) => {
-      Alert.alert("Supprimer", "Supprimer cet item ?", [
+      showAlert("Supprimer", "Supprimer cet item ?", [
         { text: "Annuler", style: "cancel" },
         {
           text: "Supprimer",
