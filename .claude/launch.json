@@ -3,9 +3,13 @@
   "configurations": [
     {
       "name": "rollcall-web",
-      "runtimeExecutable": "bash",
-      "runtimeArgs": ["-c", "cd /Users/william.fleurnr/Desktop/rollcall && npx expo start --web --port 8082"],
-      "port": 8082
+      "runtimeExecutable": "/usr/local/bin/node",
+      "runtimeArgs": ["/Users/william.fleurnr/Desktop/rollcall/node_modules/.bin/expo", "start", "--web", "--port", "8082"],
+      "port": 8082,
+      "env": {
+        "HOME": "/Users/william.fleurnr",
+        "PATH": "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"
+      }
     }
   ]
 }

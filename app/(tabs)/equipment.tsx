@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,9 +8,12 @@ import {
   Modal,
   Alert,
   Switch,
+  ActivityIndicator,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import * as ImageManipulator from "expo-image-manipulator";
 import { useEquipmentStore } from "@/stores/equipmentStore";
 import {
   UNIVERSE_LABELS,
@@ -23,6 +26,11 @@ import {
   type EquipmentFieldConfig,
 } from "@/constants/equipmentFields";
 import { EquipmentQRCode } from "@/components/QRCode";
+import {
+  identifyFromPhoto,
+  searchEquipment,
+  type IdentifiedEquipment,
+} from "@/lib/equipmentAI";
 
 const UNIVERSES = Object.keys(UNIVERSE_LABELS) as EquipmentUniverse[];
 
@@ -76,6 +84,106 @@ export default function EquipmentScreen() {
   const [selectedItem, setSelectedItem] = useState<Equipment | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const { scannedId } = useLocalSearchParams<{ scannedId?: string }>();
+
+  // AI identification state
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiIdentified, setAiIdentified] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<IdentifiedEquipment[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const applyAIResult = useCallback(
+    (result: IdentifiedEquipment) => {
+      const universe = (
+        UNIVERSES.includes(result.universe as EquipmentUniverse)
+          ? result.universe
+          : "accessory"
+      ) as EquipmentUniverse;
+      setNewItem((prev) => ({
+        ...prev,
+        universe,
+        name: result.name || prev.name,
+        brand: result.brand || prev.brand,
+        model: result.model || prev.model,
+        attributes: result.attributes || prev.attributes,
+      }));
+      setAiIdentified(result.name || result.brand + " " + result.model);
+      setTimeout(() => setAiIdentified(null), 4000);
+    },
+    []
+  );
+
+  const handleTakePhoto = async () => {
+    if (!cameraPermission?.granted) {
+      const result = await requestCameraPermission();
+      if (!result.granted) {
+        Alert.alert("Permission requise", "L'acces a la camera est necessaire pour identifier l'equipement.");
+        return;
+      }
+    }
+    setShowCamera(true);
+  };
+
+  const handleCapture = async () => {
+    if (!cameraRef.current) return;
+    try {
+      const photo = await cameraRef.current.takePictureAsync({ quality: 0.7 });
+      if (!photo) return;
+      setShowCamera(false);
+      setAiLoading(true);
+
+      // Compress and convert to base64
+      const manipulated = await ImageManipulator.manipulateAsync(
+        photo.uri,
+        [{ resize: { width: 1024 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+      );
+
+      if (!manipulated.base64) {
+        throw new Error("Failed to convert image to base64");
+      }
+
+      const result = await identifyFromPhoto(manipulated.base64);
+      applyAIResult(result);
+    } catch (error) {
+      Alert.alert("Erreur", "Impossible d'identifier l'equipement. Reessayez ou remplissez manuellement.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleSearchQueryChange = (text: string) => {
+    setSearchQuery(text);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    if (text.length < 3) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+    searchTimerRef.current = setTimeout(async () => {
+      try {
+        setAiLoading(true);
+        const results = await searchEquipment(text);
+        setSearchResults(results);
+        setShowSearchResults(true);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setAiLoading(false);
+      }
+    }, 500);
+  };
+
+  const handleSelectSuggestion = (item: IdentifiedEquipment) => {
+    applyAIResult(item);
+    setSearchQuery("");
+    setSearchResults([]);
+    setShowSearchResults(false);
+  };
 
   useEffect(() => {
     fetchEquipment().catch(() => {});
@@ -490,6 +598,30 @@ export default function EquipmentScreen() {
         </View>
       </Modal>
 
+      {/* Camera Modal */}
+      <Modal visible={showCamera} animationType="slide" presentationStyle="fullScreen">
+        <View className="flex-1" style={{ backgroundColor: "#000000" }}>
+          <CameraView ref={cameraRef} style={{ flex: 1 }} facing="back">
+            <View className="absolute top-0 left-0 right-0 flex-row items-center justify-between px-5" style={{ paddingTop: 60 }}>
+              <TouchableOpacity className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.5)" }} onPress={() => setShowCamera(false)}>
+                <MaterialCommunityIcons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+              <Text className="text-base font-semibold" style={{ color: "#FFFFFF" }}>Photographier l'equipement</Text>
+              <View style={{ width: 40 }} />
+            </View>
+            <View className="flex-1 items-center justify-center">
+              <View style={{ width: 250, height: 250, borderWidth: 2, borderColor: "rgba(232,168,56,0.5)", borderRadius: 20, borderStyle: "dashed" }} />
+              <Text className="text-sm mt-3" style={{ color: "rgba(255,255,255,0.7)" }}>Centrez l'equipement dans le cadre</Text>
+            </View>
+            <View className="absolute bottom-0 left-0 right-0 items-center" style={{ paddingBottom: 50 }}>
+              <TouchableOpacity className="w-20 h-20 rounded-full items-center justify-center" style={{ backgroundColor: "#E8A838", borderWidth: 4, borderColor: "rgba(255,255,255,0.3)" }} onPress={handleCapture} activeOpacity={0.7}>
+                <MaterialCommunityIcons name="camera" size={32} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          </CameraView>
+        </View>
+      </Modal>
+
       {/* Add Modal */}
       <Modal
         visible={showAddModal}
@@ -520,6 +652,179 @@ export default function EquipmentScreen() {
           </View>
 
           <ScrollView className="px-5 pt-4">
+            {/* AI Identification Section */}
+            <View
+              className="rounded-xl p-4 mb-5"
+              style={{
+                backgroundColor: "#1E293B",
+                borderWidth: 1,
+                borderColor: "#334155",
+              }}
+            >
+              <Text
+                className="text-xs font-bold mb-3"
+                style={{
+                  color: "#E8A838",
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
+                }}
+              >
+                IDENTIFICATION INTELLIGENTE
+              </Text>
+
+              {/* Camera button */}
+              <TouchableOpacity
+                className="flex-row items-center justify-center rounded-xl py-3.5 mb-3"
+                style={{
+                  backgroundColor: "#E8A838",
+                  opacity: aiLoading ? 0.6 : 1,
+                  gap: 10,
+                }}
+                onPress={handleTakePhoto}
+                disabled={aiLoading}
+                activeOpacity={0.8}
+              >
+                {aiLoading ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <MaterialCommunityIcons
+                    name="camera"
+                    size={22}
+                    color="#FFFFFF"
+                  />
+                )}
+                <Text
+                  className="text-base font-semibold"
+                  style={{ color: "#FFFFFF" }}
+                >
+                  {aiLoading ? "Analyse en cours..." : "Identifier par photo"}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Search field */}
+              <View style={{ position: "relative" }}>
+                <View
+                  className="flex-row items-center rounded-xl px-3"
+                  style={{
+                    backgroundColor: "#0F172A",
+                    borderWidth: 1,
+                    borderColor: "#334155",
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="magnify"
+                    size={20}
+                    color="#475569"
+                  />
+                  <TextInput
+                    className="flex-1 py-3 px-2 text-base"
+                    style={{ color: "#F1F5F9" }}
+                    placeholder="Rechercher un equipement..."
+                    placeholderTextColor="#475569"
+                    value={searchQuery}
+                    onChangeText={handleSearchQueryChange}
+                  />
+                  {aiLoading && searchQuery.length >= 3 && (
+                    <ActivityIndicator color="#E8A838" size="small" />
+                  )}
+                </View>
+
+                {/* Search suggestions dropdown */}
+                {showSearchResults && searchResults.length > 0 && (
+                  <View
+                    className="rounded-xl mt-1 overflow-hidden"
+                    style={{
+                      backgroundColor: "#0F172A",
+                      borderWidth: 1,
+                      borderColor: "#334155",
+                    }}
+                  >
+                    {searchResults.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        className="flex-row items-center px-3 py-3"
+                        style={{
+                          borderBottomWidth:
+                            index < searchResults.length - 1 ? 1 : 0,
+                          borderBottomColor: "#1E293B",
+                          gap: 10,
+                        }}
+                        onPress={() => handleSelectSuggestion(item)}
+                        activeOpacity={0.7}
+                      >
+                        <View
+                          className="w-8 h-8 rounded-lg items-center justify-center"
+                          style={{ backgroundColor: "#E8A83815" }}
+                        >
+                          <MaterialCommunityIcons
+                            name={
+                              (UNIVERSE_MCI_ICONS[
+                                item.universe as EquipmentUniverse
+                              ] || "wrench") as keyof typeof MaterialCommunityIcons.glyphMap
+                            }
+                            size={16}
+                            color="#E8A838"
+                          />
+                        </View>
+                        <View className="flex-1">
+                          <Text
+                            className="text-sm font-semibold"
+                            style={{ color: "#F1F5F9" }}
+                          >
+                            {item.name}
+                          </Text>
+                          <Text
+                            className="text-xs"
+                            style={{ color: "#64748B" }}
+                          >
+                            {item.brand}
+                          </Text>
+                        </View>
+                        <View
+                          className="px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: "#334155" }}
+                        >
+                          <Text
+                            className="text-xs"
+                            style={{ color: "#94A3B8" }}
+                          >
+                            {UNIVERSE_LABELS[
+                              item.universe as EquipmentUniverse
+                            ] || item.universe}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* AI identified confirmation banner */}
+              {aiIdentified && (
+                <View
+                  className="flex-row items-center mt-3 px-3 py-2.5 rounded-xl"
+                  style={{
+                    backgroundColor: "#2DD4BF15",
+                    borderWidth: 1,
+                    borderColor: "#2DD4BF40",
+                    gap: 8,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="check-circle"
+                    size={18}
+                    color="#2DD4BF"
+                  />
+                  <Text
+                    className="text-sm font-medium flex-1"
+                    style={{ color: "#2DD4BF" }}
+                  >
+                    {aiIdentified} identifie
+                  </Text>
+                </View>
+              )}
+            </View>
+
             {/* Universe Picker */}
             <Text
               className="text-sm font-medium mb-2"
